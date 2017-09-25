@@ -18,11 +18,11 @@
 **Correo corporativo:** g.amigo@alumnos.urjc.es <br>
 **Cuenta de GitHub:** *Yaryhus* <br>
 
-**Nombre y Apellidos:** Alejandro Camuñas Casas <br><br>
+**Nombre y Apellidos:** Alejandro Camuñas Casas <br>
 **Correo corporativo:** a.camunasc@alumnos.urjc.es <br>
 **Cuenta de GitHub:** *Aleviux* <br>
 
-**Nombre y Apellidos:** Sergio García Aloguín <br><br>
+**Nombre y Apellidos:** Sergio García Aloguín <br>
 **Correo corporativo:** s.garciaalo@alumnos.urjc.es <br>
 **Cuenta de GitHub:** *mrWester* <br>
 
@@ -53,12 +53,12 @@ El desarrollo del juego consiste en la alternancia de turnos entre jugadores y l
 
 ## 5. Copyright disclaimer
 
-This product is a non-lucrative recreation of the show, without any kind of profit or redistribution present, and for educative purposes only. 
+This product is a non-lucrative recreation of the show through a tabletop online game, without any kind of profit or redistribution present, and for educative purposes only. 
 
 All content and images used on this site are owned or licensed by *Adult Swim*, *Cartoon Network* or its affiliates. 
 Names of *Adult Swim* products and services are trademarks of *Adult Swim*, *Cartoon Network* or its subsidiaries.
 Nothing contained herein shall be construed as conferring any license or right under any *Adult Swim* patent, copyright, or trademark.
 
-If you enjoy this product, please support the creators of the show and their respective affiliates. Thank you.
+If you enjoy this product, please support the creators of the show and their respective affiliates. Thank you!
 
 ---
