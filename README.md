@@ -8,33 +8,19 @@
   #### 2. Descripción del juego
   #### 3. Reglas del juego
   #### 4. Referencias
+
+---
+
+## 1. Autores
+
+**Guillermo Amigó Urda** <br>
+g.amigo@alumnos.urjc.es <br>
+Yaryhus <br>
   
----
+**Alejandro Camuñas Casas** <br>
+a.camunasc@alumnos.urjc.es <br>
+Aleviux <br>
 
-# 1. Autores
-
-#### Guillermo Amigó Urda
-g.amigo@alumnos.urjc.es
-Yaryhus
-
-
-#### Alejandro Camuñas Casas
-a.camunasc@alumnos.urjc.es
-Aleviux
-
-
-#### Sergio García Aloguín
-s.garciaalo@alumnos.urjc.es
-mrWester
-
----
-
-# Descripción del juego
-
----
-
-# Reglas del juego
-
----
-
-# Referencias
+**Sergio García Aloguín** <br>
+s.garciaalo@alumnos.urjc.es <br>
+mrWester <br>
