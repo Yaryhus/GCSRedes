@@ -63,11 +63,11 @@ Una vez seleccionados personajes, escenario y misión, se establece la configura
 
 Esta sucesión se producirá indefinidamente, hasta que se obtenga la victoria (se cumple el objetivo) o la derrota (muerte de algún jugador), finalizando así la partida. <br><br>
 
-**Funcionalidad Extra: traidor** <br>
+**Funcionalidad extra: traidor** <br>
 Una modalidad extra del juego es la mecánica del traidor, en la cual, tras elegir personaje, escenario y misión, hay una posibilidad de que alguno de los jugadores sea designado como traidor de forma secreta, y su objetivo pasará a ser el de matar a otro jugador aliado.
 Si lo consigue, el traidor ganará la partida automáticamente en solitario, y el resto de jugadores serán derrotados. 
 
-Sin embargo, durante su turno,un jugador no traidor puede decidir realizar una acusación contra otro jugador del que sospeche, y se realizará una votación para exiliar al jugador en cuestión. Si la votación triunfa, se comprueba la identidad del sospechoso. Si era el traidor, ganan los demás jugadores, y él es derrotado. Si no era el traidor, pierden los demás jugadores (puede darse el caso de que no haya traidor en la partida). Por ello, conviene que los jugadores no traidores no caigan en la paranoia, y que el traidor, de haberlo, sea precavido con sus acciones, atacando a un aliado sólo cuando sabe que lo va a matar en un sólo ataque.
+Sin embargo, durante su turno, un jugador no traidor puede decidir realizar una acusación contra otro jugador del que sospeche, y se realizará una votación para exiliar al jugador en cuestión. Si la votación triunfa, se comprueba la identidad del sospechoso. Si era el traidor, ganan los demás jugadores, y él es derrotado. Si no era el traidor, pierden los demás jugadores (puede darse el caso de que no haya traidor en la partida). Por ello, conviene que los jugadores no traidores no caigan en la paranoia, y que el traidor, de haberlo, sea precavido con sus acciones, atacando a un aliado sólo cuando sabe que lo va a matar en un sólo ataque.
 
 ---
 
