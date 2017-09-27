@@ -69,7 +69,7 @@ Si lo consigue, el traidor ganará la partida automáticamente en solitario, y e
 
 Sin embargo, durante su turno, un jugador no traidor puede decidir realizar una acusación contra otro jugador del que sospeche, y se realizará una votación para exiliar al jugador en cuestión. Si la votación triunfa, se comprueba la identidad del sospechoso. Si era el traidor, ganan los demás jugadores, y él es derrotado. Si no era el traidor, pierden los demás jugadores (puede darse el caso de que no haya traidor en la partida). Por ello, conviene que los jugadores no traidores no caigan en la paranoia, y que el traidor, de haberlo, sea precavido con sus acciones, atacando a un aliado sólo cuando sabe que lo va a matar en un sólo ataque. <br><br>
 
-En cuanto a la parte online del juego, éste dispondra de una consola de chat para introducir comandos a la máquina, así como comunicarse de forma asíncrona con otros jugadores.
+En cuanto a la parte online del juego, éste dispondrá de una consola de chat para introducir comandos a la máquina, así como comunicarse de forma asíncrona con otros jugadores.
 
 ---
 
