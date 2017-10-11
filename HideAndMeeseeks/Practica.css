@@ -3,3 +3,12 @@ Archivo de Estilo - Guillermo Amigó Urda, Alejandro Camuñas Casas y Sergio Gar
 Práctica final de Juegos en Red.
 Grado en Diseño y Desarrollo de Videojuegos.
 */
+
+body 
+{ 
+    background-image: url("Material/Img/Otros/Background.png");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+}
