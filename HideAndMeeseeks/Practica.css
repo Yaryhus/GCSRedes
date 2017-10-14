@@ -4,6 +4,7 @@ Práctica final de Juegos en Red.
 Grado en Diseño y Desarrollo de Videojuegos.
 */
 
+
 body 
 { 
     background-image: url("Material/Img/Otros/Background.png");
@@ -11,4 +12,18 @@ body
     background-attachment: fixed;
     background-position: center;
     background-size: cover;
+}
+
+#Barra
+{
+	position: fixed;
+	left:0; 
+	right:0;
+	bottom: 0;
+	width: 50%;
+	margin-right: auto;
+    margin-left: auto;
+    text-align:center;
+    background-color: #ddd;
+  	border: 1px solid #000;
 }
