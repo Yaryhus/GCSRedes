@@ -13,8 +13,10 @@ var game = new Phaser.Game(1000, 751, Phaser.CANVAS, '', { preload: preload, cre
 var njug = 1; //Número de jugadores de la partida.
 var started = false; //Booleano de si ha empezado la partida.
 var p = new Partida(njug); //Instancia de la partida.
-
+var c;
+var rect;
 var esturno = false; //Booleano auxiliar para almacenar información del turno del jugador.
+var graphics;
 
 
 //////////////////////////////////////// Phaser //////////////////////////////////////////
@@ -81,24 +83,57 @@ function create() //Función create: inicia el juego.
 	game.scale.pageAlignVertically = true;
 
 	p.init(); //Inicializamos la partida.
+	c = p.getMapa().getTablero();
+	graphics = game.add.graphics();
 	started = true; //Fijamos el booleano a true al empezar la partida.
-
+	
 	//Creamos los manejadores de eventos.
 	document.getElementById("mover").addEventListener("click", moverclick);
+
 }
 
 
 function update() //Función update: actualiza el juego.
 {
+
+		//Capturamos la posicion del ratón. Debug.
+	    //var pos = game.input.activePointer.position;
+        // console.log("x:" + pos.x + " y:" + pos.y, 180, 200);
+
 	if (started) //Si la partida ha empezado.
 	{
 		esturno = (p.getJugadores()[0].getAccionesDisp() > 0) //Fijamos el booleano a true si: acciones > 0.
+
 
 		if (!esturno) //Si ha terminado el turno del jugador, turno de la máquina.
 		{
 			alert("Se acabó el turno.") //Debug.
 			p.getJugadores()[0].setAccionesDisp(4); //Reseteamos las acciones del jugador.
-		}	 	
+		}
+
+ 	}
+
+ 	if(game.input.activePointer.isDown)
+ 	{
+ 	
+
+ 		for (var i=0; i<7; i++)
+			{
+				for(var j=0; j<9; j++)
+				{
+					if(c[i][j] instanceof Casilla )
+					{
+
+					rect = c[i][j].getRect();
+					if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y))
+						{
+							c[i][j].pintRect();
+							console.log("i "+i+ " j " + j);
+						}
+				}
+
+				}
+			}
  	}
 }
 
@@ -158,6 +193,11 @@ function Partida(numJ) //Objeto Partida.
 	{
 		return jugadores;
 	}
+	this.getMapa = function()
+	{
+		return mapa;
+	}
+
 }
 
 
@@ -220,20 +260,111 @@ function Mapa(tip) //Objeto Mapa.
 			{
 				Tablero[i] = new Array (9);
 			}
+
+			this.fillTab(); //Rellenamos el tablero.
+			this.rectTab(); //Hacemos los rectángulos de las casillas.
 		}
+	}
+
+	this.fillTab = function() //Función que rellena el tablero con objetos casilla, según el mapa.
+	{
+		if (tipo == 1) //Si el mapa es de tipo 1.
+		{
+			//Rellenamos el tablero como undefined, inicialmente.
+			for (var i=0; i<7; i++)
+			{
+				for(var j=0; j<9; j++)
+				{
+					Tablero[i][j] = undefined;
+				}
+			}
+
+			//Casilla objetivo.
+			Tablero[4][7] = new Casilla(false,825,325,175,175);
+
+			//Casillas exteriores.
+			Tablero[0][4] = new Casilla(false,450,0,100,50); Tablero[1][4] = new Casilla(false,450,75,100,100); Tablero[2][0] = new Casilla(false,0,200,50,100);
+			Tablero[2][1] = new Casilla(false,75,200,100,100); Tablero[2][2] = new Casilla(false,200,200,100,100); Tablero[2][4] = new Casilla(false,450,200,100,100);
+			Tablero[2][3] = new Casilla(false,325,200,100,100); Tablero[2][5] = new Casilla(false,575,200,75,100);
+			Tablero[2][6] = new Casilla(false,700,200,100,100); Tablero[2][7] = new Casilla(false,825,200,100,100); Tablero[2][8] = new Casilla(false,950,200,50,100);
+			Tablero[3][0] = new Casilla(false,0,325,50,100); Tablero[3][2] = new Casilla(false,200,325,100,100); Tablero[3][6] = new Casilla(false,700,325,100,100);
+			Tablero[4][0] = new Casilla(false,0,450,50,100); Tablero[4][1] = new Casilla(false,75,450,100,100); Tablero[4][2] = new Casilla(false,200,450,100,100);
+			Tablero[4][3] = new Casilla(false,325,450,100,100); Tablero[4][4] = new Casilla(false,450,450,100,100); Tablero[4][5] = new Casilla(false,575,450,100,100);
+			Tablero[4][6] = new Casilla(false,700,450,100,100); Tablero[5][2] = new Casilla(false,200,575,100,100); Tablero[6][2] = new Casilla(false,200,700,100,50);
+
+			//Casillas interiores.
+			Tablero[1][2] = new Casilla(true,0,0,250,170); Tablero[1][3] = new Casilla(true,250,0,170,170); Tablero[1][5] = new Casilla(true,575,0,175,175); 
+			Tablero[1][6] = new Casilla(true,750,0,250,175); Tablero[3][1] = new Casilla(true,75,325,100,100); Tablero[3][3] = new Casilla(true,325,325,175,100);
+			Tablero[3][5] = new Casilla(true,500,325,175,100); Tablero[5][1] = new Casilla(true,0,575,175,175); Tablero[5][3] = new Casilla(true,325,575,175,175);
+			Tablero[5][6] = new Casilla(true,500,575,250,175); Tablero[5][7] = new Casilla(true,825,575,175,175);
+
+
+		}
+	}
+	this.rectTab= function()
+	{
+/*
+		var graphics = game.add.graphics();
+		graphics.beginFill(0xFFFFFF);
+		graphics.alpha= 0.6;
+		rect1 = graphics.drawRect(0, 0, 250, 170);
+		graphics.drawRect(250, 0, 170, 170);
+		graphics.drawRect(450, 0, 100, 50);
+		graphics.drawRect(580, 0, 170, 170);
+		graphics.drawRect(750, 0, 250, 170);
+		//graphics.drawRect(450, 75, 100, 100);
+
+
+	graphics.inputEnabled = true;
+	graphics.input.useHandCursor = true;
+	rect1.events.onInputUp.add(function(){rect1.fillAlpha= 0.0;}, this);
+*/
+		/*var graphics = game.add.graphics(0, 0);
+	graphics.beginFill(0xFF0000);
+	graphics.alpha= 0.5;
+	graphics.drawRect(0, 0, 100, 100);
+
+	
+	function onClick(target, pointer){
+		 console.log("hooray");
+
+		 //graphics.destroy();
+	}*/
+
+	//Phaser.Rectangle.contains(rect,game.input.x,game.input.y)
+	
+	}
+	this.getTablero = function()
+	{
+		return Tablero;
 	}
 }
 
 
-function Casilla() //Objeto Casilla.
+function Casilla(inter,x,y,ancho,alto) //Objeto Casilla.
 {
 	//Variables.
 	var ruido = 0; //Ruido de la casilla.
+	var rectan= new Phaser.Rectangle(x,y,ancho,alto);
 	var numPersonajes = 0; //Personajes en la casilla.
 	var numEnemigos = 0; //Enemigos en la casilla.
-	var interior = false; //Booleano sobre si la casilla es interior o no.
+	var interior = inter; //Booleano sobre si la casilla es interior o no.
+
+
 
 	//Funciones.
+	
+	this.pintRect = function()
+	{
+		graphics.beginFill(0xFF0000);
+		graphics.alpha= 0.5;
+		graphics.drawRect(x, y, ancho, alto);
+	}
+
+	this.getRect = function()
+	{
+		return rectan;
+	}
 }
 
 
@@ -254,4 +385,5 @@ function Objeto() //Objeto objeto.
 
 	//Funciones.
 }
+
 
