@@ -12,13 +12,11 @@ var game = new Phaser.Game(1000, 751, Phaser.CANVAS, '', { preload: preload, cre
 
 var njug = 1; //Número de jugadores de la partida.
 var started = false; //Booleano de si ha empezado la partida.
-var p = new Partida(njug); //Instancia de la partida.
-var c;
-var rect;
 var esturno = false; //Booleano auxiliar para almacenar información del turno del jugador.
-var graphics;
+var move = false;
+var p = new Partida(njug); //Instancia de la partida.
 
-
+var isClicked = false;
 //////////////////////////////////////// Phaser //////////////////////////////////////////
 
 
@@ -55,12 +53,15 @@ function preload() //Función preload: precarga los assets del juego.
 
 
 		//Nombres y directorios de los sprites.
+		/*
 		var nombreSprite = new Array("S_AS", "S_Beth", "S_Jerry", "S_Meeseek1", "S_Meeseek2", "S_Morty", "S_MrP", "S_Rick", "S_Summer");
 
 		var dirSprite = new Array("Material/Sprites/as.png", "Material/Sprites/beth.png", "Material/Sprites/jerry.png", "Material/Sprites/meeseek1.png",
 								  "Material/Sprites/meeseek2.png", "Material/Sprites/morty.png", "Material/Sprites/mrp.png", "Material/Sprites/rick.png",
 								  "Material/Sprites/summer.png");
-	
+								  */
+
+		game.load.spritesheet('S_Rick', "Material/Sprites/rick.png", 57, 72.5, 16);
 
 	//Precargamos los assets.
 	game.load.image('Logo', 'Material/Img/Otros/Logo.png');
@@ -72,7 +73,7 @@ function preload() //Función preload: precarga los assets del juego.
 
 	game.load.images(nombreP,dirP);
 	game.load.images(nombreC,dirC);
-	game.load.images(nombreSprite,dirSprite);
+	//game.load.images(nombreSprite,dirSprite);
 }
 
 
@@ -83,24 +84,20 @@ function create() //Función create: inicia el juego.
 	game.scale.pageAlignVertically = true;
 
 	p.init(); //Inicializamos la partida.
-	c = p.getMapa().getTablero();
-	graphics = game.add.graphics();
 	started = true; //Fijamos el booleano a true al empezar la partida.
 	
 	//Creamos los manejadores de eventos.
 	document.getElementById("mover").addEventListener("click", moverclick);
-
 }
 
 
 function update() //Función update: actualiza el juego.
 {
+	//(Debug): Capturamos la posición del ratón.
+	//var pos = game.input.activePointer.position;
+    //console.log("x:" + pos.x + " y:" + pos.y, 180, 200);
 
-		//Capturamos la posicion del ratón. Debug.
-	    //var pos = game.input.activePointer.position;
-        // console.log("x:" + pos.x + " y:" + pos.y, 180, 200);
-
-	if (started) //Si la partida ha empezado.
+	if (started&&(!move)) //Si la partida ha empezado.
 	{
 		esturno = (p.getJugadores()[0].getAccionesDisp() > 0) //Fijamos el booleano a true si: acciones > 0.
 
@@ -110,31 +107,115 @@ function update() //Función update: actualiza el juego.
 			alert("Se acabó el turno.") //Debug.
 			p.getJugadores()[0].setAccionesDisp(4); //Reseteamos las acciones del jugador.
 		}
+	}
 
- 	}
 
- 	if(game.input.activePointer.isDown)
- 	{
- 	
 
- 		for (var i=0; i<7; i++)
+
+
+ 			var c = p.getMapa().getTablero();
+
+
+
+		if (move){
+
+
+ 			var casillaActual = p.getJugadores()[0].getCasilla();
+ 			//c[casillaActual[0]+1 ][casillaActual[1]+1 ].getGraphics().destroy();
+ 			//c[casillaActual[0]+1 ][casillaActual[1]+1 ].pintRect(0xff0000,0.3);
+
+ 			c[casillaActual[0]+1 ][casillaActual[1] ].getGraphics().destroy();
+ 			c[casillaActual[0]+1 ][casillaActual[1] ].pintRect(0xff0000,0.3);
+
+ 			//c[casillaActual[0]-1 ][casillaActual[1]-1 ].getGraphics().destroy();
+ 			//c[casillaActual[0]-1 ][casillaActual[1]-1 ].pintRect(0xff0000,0.3);
+
+
+			if( (game.input.activePointer.isDown))
+	 		{
+
+
+ 			for (var i=0; i<7; i++)
 			{
 				for(var j=0; j<9; j++)
 				{
-					if(c[i][j] instanceof Casilla )
+					if(c[i][j] instanceof Casilla)
 					{
+						var rect = c[i][j].getRect();
 
-					rect = c[i][j].getRect();
-					if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y))
-						{
-							c[i][j].pintRect();
-							console.log("i "+i+ " j " + j);
+						if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y)){
+							p.getJugadores()[0].setCasilla(i,j);
+							p.getJugadores()[0].getPersonaje().movePersonaje(c[i][j].getX()+23.5,c[i][j].getY()+16.25);
 						}
-				}
 
+					}
 				}
 			}
- 	}
+
+
+				move = false;
+	 			var c = p.getMapa().getTablero();
+	 			for (var i=0; i<7; i++)
+				{
+					for(var j=0; j<9; j++)
+					{
+						if(c[i][j] instanceof Casilla)
+							{
+							c[i][j].setColor(0xFFFFFF);
+							c[i][j].getGraphics().destroy();
+						}
+					}
+				}
+	 		}
+
+		} 
+
+
+ 			for (var i=0; i<7; i++)
+			{
+				for(var j=0; j<9; j++)
+				{
+					if(c[i][j] instanceof Casilla)
+					{
+						var rect = c[i][j].getRect();
+
+						if (c[i][j].getColor()!=0xff0000){
+							c[i][j].getGraphics().destroy();
+						}
+						
+
+						if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y))
+						{
+							if (c[i][j].getColor()!=0xff0000)
+								c[i][j].pintRect(0xFFFFFF,0.6);
+							else{
+								c[i][j].getGraphics().destroy();
+								c[i][j].pintRect(0xff0000,0.8);
+							}
+							
+							//(Debug): console.log("i: " + i + " j: " + j);
+						} 
+					}
+				}
+			}
+
+
+		// UTILIZAR MAS ADELANTE ESTO COMENTADO
+		/*
+		if(game.input.activePointer.isDown && (isClicked==false))
+ 		{
+ 			isClicked = true;
+
+ 		} else if(game.input.activePointer.isUp) {
+ 			isClicked = false;
+ 		}
+ 		*/
+
+
+
+ 		
+
+
 }
 
 
@@ -143,10 +224,39 @@ function update() //Función update: actualiza el juego.
 
 function moverclick() //Función llamada al pulsar el botón "Mover".
 {
- 	if (esturno) //Si es el turno del jugador (puede realizar sus acciones).
- 	{		
-		alert("Haga click en <<añadir extensión>> para cerrar esta página."); //Debug.
-   		p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+ 	
+
+ 	if (move==false){
+
+		if (esturno) //Si es el turno del jugador (puede realizar sus acciones).
+		 	{	
+		 	    move = true;	
+		   		p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+		 	}
+
+ 	} else {
+
+ 		move = false;
+
+
+
+ 			var c = p.getMapa().getTablero();
+
+ 			for (var i=0; i<7; i++)
+			{
+				for(var j=0; j<9; j++)
+				{
+					if(c[i][j] instanceof Casilla)
+						{
+						c[i][j].setColor(0xFFFFFF);
+						c[i][j].getGraphics().destroy();
+					}
+						
+					
+				}
+			}
+
+
  	}
 }
 
@@ -182,10 +292,13 @@ function Partida(numJ) //Objeto Partida.
 			jugadores[i] = new Jugador();
 		}
 
+		mapa.init(); //Inicializamos el mapa.
+
 		//Seleccionamos los personajes.
 		jugadores[0].setPersonaje(new Personaje("Rick"));
+		jugadores[0].getPersonaje().init();
 
-		mapa.init(); //Inicializamos el mapa.
+		
 	}
 
 	//Getters.
@@ -197,7 +310,6 @@ function Partida(numJ) //Objeto Partida.
 	{
 		return mapa;
 	}
-
 }
 
 
@@ -207,7 +319,7 @@ function Jugador() //Objeto Jugador.
 	var traidor; //Booleano de si es traidor o no.
 	var personaje; //Personaje del jugador.
 	var accionesDisp = 4; //Acciones disponibles del jugador.
-	var casilla = new Array(); //Índice i y j de la casilla en que está.
+	var casilla = [0,4]; //Índice i y j de la casilla en que está.
 
 	//Funciones.
 
@@ -222,10 +334,21 @@ function Jugador() //Objeto Jugador.
 	{
 		personaje = p;
 	} 
+	this.getPersonaje = function()
+	{
+		return personaje;
+	} 
 
 	this.setAccionesDisp = function(a)
 	{
 		accionesDisp = a;
+	}
+
+	this.getCasilla = function(){
+		return casilla;
+	}
+	this.setCasilla = function(i,j){
+		casilla = [i,j];
 	}
 }
 
@@ -237,8 +360,30 @@ function Personaje(nom) //Objeto Personaje.
 	var salud = 3; //Salud del personaje.
 	var dados; //Dados del personaje.
 	var inventario = new Array(3); //Inventario de objetos del personaje.
+	var sprite;
 
 	//Funciones.
+	this.init = function()
+	{
+		sprite = game.add.sprite(475, 0, 'S_Rick');
+
+
+	   // sprite.animations.add('idle', 16, true);
+
+        
+       sprite.frame = 0;
+
+	}
+
+	this.movePersonaje = function(x,y)
+	{
+		//sprite.animations.play('idle');
+		sprite.x = x;
+		sprite.y = y;
+        sprite.frame = 0;
+
+	}
+
 }
 
 
@@ -262,7 +407,6 @@ function Mapa(tip) //Objeto Mapa.
 			}
 
 			this.fillTab(); //Rellenamos el tablero.
-			this.rectTab(); //Hacemos los rectángulos de las casillas.
 		}
 	}
 
@@ -296,44 +440,11 @@ function Mapa(tip) //Objeto Mapa.
 			Tablero[1][2] = new Casilla(true,0,0,250,170); Tablero[1][3] = new Casilla(true,250,0,170,170); Tablero[1][5] = new Casilla(true,575,0,175,175); 
 			Tablero[1][6] = new Casilla(true,750,0,250,175); Tablero[3][1] = new Casilla(true,75,325,100,100); Tablero[3][3] = new Casilla(true,325,325,175,100);
 			Tablero[3][5] = new Casilla(true,500,325,175,100); Tablero[5][1] = new Casilla(true,0,575,175,175); Tablero[5][3] = new Casilla(true,325,575,175,175);
-			Tablero[5][6] = new Casilla(true,500,575,250,175); Tablero[5][7] = new Casilla(true,825,575,175,175);
-
-
+			Tablero[5][6] = new Casilla(true,500,575,250,175); Tablero[5][7] = new Casilla(true,750,575,300,175);
 		}
 	}
-	this.rectTab= function()
-	{
-/*
-		var graphics = game.add.graphics();
-		graphics.beginFill(0xFFFFFF);
-		graphics.alpha= 0.6;
-		rect1 = graphics.drawRect(0, 0, 250, 170);
-		graphics.drawRect(250, 0, 170, 170);
-		graphics.drawRect(450, 0, 100, 50);
-		graphics.drawRect(580, 0, 170, 170);
-		graphics.drawRect(750, 0, 250, 170);
-		//graphics.drawRect(450, 75, 100, 100);
-
-
-	graphics.inputEnabled = true;
-	graphics.input.useHandCursor = true;
-	rect1.events.onInputUp.add(function(){rect1.fillAlpha= 0.0;}, this);
-*/
-		/*var graphics = game.add.graphics(0, 0);
-	graphics.beginFill(0xFF0000);
-	graphics.alpha= 0.5;
-	graphics.drawRect(0, 0, 100, 100);
-
 	
-	function onClick(target, pointer){
-		 console.log("hooray");
-
-		 //graphics.destroy();
-	}*/
-
-	//Phaser.Rectangle.contains(rect,game.input.x,game.input.y)
-	
-	}
+	//Getters.
 	this.getTablero = function()
 	{
 		return Tablero;
@@ -341,29 +452,52 @@ function Mapa(tip) //Objeto Mapa.
 }
 
 
-function Casilla(inter,x,y,ancho,alto) //Objeto Casilla.
+function Casilla(inter, x, y, ancho, alto) //Objeto Casilla.
 {
 	//Variables.
+	var graphics = game.add.graphics();
 	var ruido = 0; //Ruido de la casilla.
-	var rectan= new Phaser.Rectangle(x,y,ancho,alto);
 	var numPersonajes = 0; //Personajes en la casilla.
 	var numEnemigos = 0; //Enemigos en la casilla.
 	var interior = inter; //Booleano sobre si la casilla es interior o no.
-
-
+	var rectan = new Phaser.Rectangle(x,y,ancho,alto); //Rectángulo visual de la casilla.
+	var colorCasilla;
 
 	//Funciones.
-	
-	this.pintRect = function()
+	this.pintRect = function(color, al) //Función que pinta el rectángulo.
 	{
-		graphics.beginFill(0xFF0000);
-		graphics.alpha= 0.5;
+		graphics = game.add.graphics();
+		graphics.beginFill(color);
+		graphics.alpha= al;
 		graphics.drawRect(x, y, ancho, alto);
+		colorCasilla = color;
 	}
+	this.getGraphics = function()
+	{
+		return graphics;
+	}
+	
 
+	//Getters.
 	this.getRect = function()
 	{
 		return rectan;
+	}
+	this.getColor = function()
+	{
+		return colorCasilla;
+	}
+
+	this.setColor = function(col)
+	{
+		colorCasilla = col;
+	}
+
+	this.getX = function(){
+		return rectan.x;
+	}
+	this.getY = function(){
+		return rectan.y;
 	}
 }
 
@@ -385,5 +519,4 @@ function Objeto() //Objeto objeto.
 
 	//Funciones.
 }
-
 
