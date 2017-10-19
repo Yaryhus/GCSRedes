@@ -13,10 +13,15 @@ var game = new Phaser.Game(1000, 751, Phaser.CANVAS, '', { preload: preload, cre
 var njug = 1; //Número de jugadores de la partida.
 var started = false; //Booleano de si ha empezado la partida.
 var esturno = false; //Booleano auxiliar para almacenar información del turno del jugador.
-var move = false;
+
+var move = false; //Booleano auxiliar para almacenar información de si el modo mover está activo.
+var moving = false; //Booleano auxiliar para almacenar información de si se ha finalizado la animación de mover.
+var movex = 0; //Variable auxiliar para almacenar la x destino al moverse.
+var movey = 0; //Variable auxiliar para almacenar la y destino al moverse.
+
 var p = new Partida(njug); //Instancia de la partida.
 
-var isClicked = false;
+
 //////////////////////////////////////// Phaser //////////////////////////////////////////
 
 
@@ -53,15 +58,12 @@ function preload() //Función preload: precarga los assets del juego.
 
 
 		//Nombres y directorios de los sprites.
-		/*
-		var nombreSprite = new Array("S_AS", "S_Beth", "S_Jerry", "S_Meeseek1", "S_Meeseek2", "S_Morty", "S_MrP", "S_Rick", "S_Summer");
+		var nombreSprite = new Array("S_Beth", "S_Jerry", "S_Meeseek1", "S_Meeseek2", "S_Morty", "S_MrP", "S_Rick", "S_Summer");
 
-		var dirSprite = new Array("Material/Sprites/as.png", "Material/Sprites/beth.png", "Material/Sprites/jerry.png", "Material/Sprites/meeseek1.png",
+		var dirSprite = new Array("Material/Sprites/beth.png", "Material/Sprites/jerry.png", "Material/Sprites/meeseek1.png",
 								  "Material/Sprites/meeseek2.png", "Material/Sprites/morty.png", "Material/Sprites/mrp.png", "Material/Sprites/rick.png",
 								  "Material/Sprites/summer.png");
-								  */
 
-		game.load.spritesheet('S_Rick', "Material/Sprites/rick.png", 57, 72.5, 16);
 
 	//Precargamos los assets.
 	game.load.image('Logo', 'Material/Img/Otros/Logo.png');
@@ -70,10 +72,15 @@ function preload() //Función preload: precarga los assets del juego.
 	game.load.image("Pickle","Material/Img/Otros/Pickle.png");
 	game.load.image("Traitor","Material/Img/Otros/Traitor.png");
 	game.load.image("Box","Material/Img/Otros/Box.png");
+	game.load.image("AS","Material/Sprites/as.png");
 
 	game.load.images(nombreP,dirP);
 	game.load.images(nombreC,dirC);
-	//game.load.images(nombreSprite,dirSprite);
+	
+	for (var i=0; i<8; i++)
+	{
+		game.load.spritesheet(nombreSprite[i], dirSprite[i], 57, 72.5, 16)
+	}
 }
 
 
@@ -86,8 +93,15 @@ function create() //Función create: inicia el juego.
 	p.init(); //Inicializamos la partida.
 	started = true; //Fijamos el booleano a true al empezar la partida.
 	
+	//Añadimos los atajos de teclado.
+	var keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
+    keyA.onDown.add(atacarclick, this);
+	var keyM = game.input.keyboard.addKey(Phaser.Keyboard.M);
+    keyM.onDown.add(moverclick, this);
+
 	//Creamos los manejadores de eventos.
 	document.getElementById("mover").addEventListener("click", moverclick);
+	document.getElementById("atacar").addEventListener("click", atacarclick);
 }
 
 
@@ -97,125 +111,22 @@ function update() //Función update: actualiza el juego.
 	//var pos = game.input.activePointer.position;
     //console.log("x:" + pos.x + " y:" + pos.y, 180, 200);
 
-	if (started&&(!move)) //Si la partida ha empezado.
+	if (started && (!move)) //Si la partida ha empezado y no se está en el modo mover.
 	{
 		esturno = (p.getJugadores()[0].getAccionesDisp() > 0) //Fijamos el booleano a true si: acciones > 0.
-
+		document.getElementById("Acciones").innerHTML = "Acciones: " + p.getJugadores()[0].getAccionesDisp(); //Mostramos las acciones disponibles.
 
 		if (!esturno) //Si ha terminado el turno del jugador, turno de la máquina.
 		{
-			alert("Se acabó el turno.") //Debug.
+			//alert("Se acabó el turno.") //Debug.
+
 			p.getJugadores()[0].setAccionesDisp(4); //Reseteamos las acciones del jugador.
 		}
 	}
 
 
-
-
-
- 			var c = p.getMapa().getTablero();
-
-
-
-		if (move){
-
-
- 			var casillaActual = p.getJugadores()[0].getCasilla();
- 			//c[casillaActual[0]+1 ][casillaActual[1]+1 ].getGraphics().destroy();
- 			//c[casillaActual[0]+1 ][casillaActual[1]+1 ].pintRect(0xff0000,0.3);
-
- 			c[casillaActual[0]+1 ][casillaActual[1] ].getGraphics().destroy();
- 			c[casillaActual[0]+1 ][casillaActual[1] ].pintRect(0xff0000,0.3);
-
- 			//c[casillaActual[0]-1 ][casillaActual[1]-1 ].getGraphics().destroy();
- 			//c[casillaActual[0]-1 ][casillaActual[1]-1 ].pintRect(0xff0000,0.3);
-
-
-			if( (game.input.activePointer.isDown))
-	 		{
-
-
- 			for (var i=0; i<7; i++)
-			{
-				for(var j=0; j<9; j++)
-				{
-					if(c[i][j] instanceof Casilla)
-					{
-						var rect = c[i][j].getRect();
-
-						if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y)){
-							p.getJugadores()[0].setCasilla(i,j);
-							p.getJugadores()[0].getPersonaje().movePersonaje(c[i][j].getX()+23.5,c[i][j].getY()+16.25);
-						}
-
-					}
-				}
-			}
-
-
-				move = false;
-	 			var c = p.getMapa().getTablero();
-	 			for (var i=0; i<7; i++)
-				{
-					for(var j=0; j<9; j++)
-					{
-						if(c[i][j] instanceof Casilla)
-							{
-							c[i][j].setColor(0xFFFFFF);
-							c[i][j].getGraphics().destroy();
-						}
-					}
-				}
-	 		}
-
-		} 
-
-
- 			for (var i=0; i<7; i++)
-			{
-				for(var j=0; j<9; j++)
-				{
-					if(c[i][j] instanceof Casilla)
-					{
-						var rect = c[i][j].getRect();
-
-						if (c[i][j].getColor()!=0xff0000){
-							c[i][j].getGraphics().destroy();
-						}
-						
-
-						if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y))
-						{
-							if (c[i][j].getColor()!=0xff0000)
-								c[i][j].pintRect(0xFFFFFF,0.6);
-							else{
-								c[i][j].getGraphics().destroy();
-								c[i][j].pintRect(0xff0000,0.8);
-							}
-							
-							//(Debug): console.log("i: " + i + " j: " + j);
-						} 
-					}
-				}
-			}
-
-
-		// UTILIZAR MAS ADELANTE ESTO COMENTADO
-		/*
-		if(game.input.activePointer.isDown && (isClicked==false))
- 		{
- 			isClicked = true;
-
- 		} else if(game.input.activePointer.isUp) {
- 			isClicked = false;
- 		}
- 		*/
-
-
-
- 		
-
-
+	//Turno del jugador.
+ 	updateMover();
 }
 
 
@@ -224,50 +135,388 @@ function update() //Función update: actualiza el juego.
 
 function moverclick() //Función llamada al pulsar el botón "Mover".
 {
- 	
+	if(!moving) //Si no se está reproduciendo la animación de mover.
+	{
+	 	if (!move) //Si no se está en el modo mover.
+	 	{
+			if (esturno) //Si es el turno del jugador (puede realizar sus acciones).
+			{	
+			 	move = true;	
+			}
+	 	} 
+	 	else //Si se está en el modo mover. 
+	 	{
+	 		move = false;
 
- 	if (move==false){
+	 		var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
 
-		if (esturno) //Si es el turno del jugador (puede realizar sus acciones).
-		 	{	
-		 	    move = true;	
-		   		p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
-		 	}
-
- 	} else {
-
- 		move = false;
-
-
-
- 			var c = p.getMapa().getTablero();
-
- 			for (var i=0; i<7; i++)
+	 		//Limpiamos el tablero.
+	 		for (var i = 0; i < 7; i++)
 			{
-				for(var j=0; j<9; j++)
+				for(var j = 0; j < 9; j++)
 				{
-					if(c[i][j] instanceof Casilla)
-						{
-						c[i][j].setColor(0xFFFFFF);
-						c[i][j].getGraphics().destroy();
+					if(c[i][j] instanceof Casilla) //Si la posición [i,j] es una casilla.
+					{
+						c[i][j].setColor(0xFFFFFF); //Color blanco.
+						c[i][j].getGraphics().destroy(); //Destruimos los gráficos.
 					}
-						
-					
 				}
 			}
+ 		}
+	}
+}
 
 
- 	}
+function atacarclick() //Función llamada al pulsar el botón "Atacar".
+{
+	if(!moving) //Si no se está reproduciendo la animación de mover.
+	{
+		if(esturno) //Si es el turno del jugador (puede realizar sus acciones).
+		{
+			for(var i = 0; i < p.getEnemigos().length; i++) //Recorremos el array de enemigos.
+			{
+				if((p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) 
+				&& (p.getEnemigos()[i].getCasilla()[1] == p.getJugadores()[0].getCasilla()[1])) //Si [i,j] del enemigo son iguales que las del jugador.
+				{
+					var tirada = Dados(p.getJugadores()[0].getPersonaje().getDados(), 3); //Tiramos los dados (n dados del personaje, 50% acierto).
+					p.getEnemigos()[i].setSalud(p.getEnemigos()[i].getSalud() - tirada); //Disminuimos la salud del enemigo en la tirada realizada.
+
+					if(p.getEnemigos()[i].getSalud() <= 0) //Si el enemigo pierde toda su salud.
+					{
+						p.getEnemigos()[i].getSprite().destroy(); //Eliminamos el sprite.
+						p.getEnemigos()[i] = undefined; //Eliminamos el enemigo.
+					}
+
+					p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp()-1); //Disminuimos las acciones del jugador en 1.
+				}
+			}
+		}
+	}
 }
 
 
 ////////////////////////////////// Funciones auxiliares //////////////////////////////////
 
 
-function Dados() //Función auxiliar para el lanzamiento aleatorio de dados.
+function Dados(num, prob) //Función auxiliar para el lanzamiento aleatorio de dados.
 {
+	var aciertos = 0;
 
+	for (var i = 0; i < num; i++)
+	{
+		 var roll = Math.floor(Math.random() * 6) + 1;
+
+		 if (roll <= prob)
+		 {
+		 	aciertos++;
+		 }
+	}
+
+	return aciertos;
 }
+
+function CasillasAd(base) //Función que recibe un array índice de casilla y devuelve sus adyacentes.
+{
+	var adyacentes = new Array();
+	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+	//Casillas exteriores.
+	if (!c[base[0]][base[1]].getInterior())
+	{
+		//Abajo.
+		if(base[0] != 6) //Si no es la última fila.
+		{
+			if((c[base[0]+1][base[1]] instanceof Casilla) && (!c[base[0]+1][base[1]].getInterior())) //Si la posición del tablero es una casilla exterior.
+			{
+				adyacentes.push(c[base[0]+1][base[1]]);
+			}
+		}
+
+		//Arriba.
+		if(base[0] != 0) //Si no es la primera fila.
+		{
+			if((c[base[0]-1][base[1]] instanceof Casilla) && (!c[base[0]-1][base[1]].getInterior())) //Si la posición del tablero es una casilla exterior.
+			{
+				adyacentes.push(c[base[0]-1][base[1]]);
+			}
+		}
+
+		//Derecha.
+		if(base[1] != 8 && (c[base[0]][base[[1]]] != c[2][5])) //Si no es la última columna, ni la excepción [2, 5].
+		{
+			if((c[base[0]][base[1]+1] instanceof Casilla) && (!c[base[0]][base[1]+1].getInterior())) //Si la posición del tablero es una casilla exterior.
+			{
+				adyacentes.push(c[base[0]][base[1]+1]);
+			}
+		}
+
+		//Izquierda.
+		if(base[1] != 0 && (c[base[0]][base[[1]]] != c[2][6])) //Si no es la primera columna, ni la excepción [2, 6].
+		{
+			if((c[base[0]][base[1]-1] instanceof Casilla) && (!c[base[0]][base[1]-1].getInterior())) //Si la posición del tablero es una casilla exterior.
+			{
+				adyacentes.push(c[base[0]][base[1]-1]);
+			}
+		}
+	}
+
+
+	//Casillas interiores.
+
+	switch (c[base[0]][base[[1]]])
+	{
+		case c[1][4]:
+		adyacentes.push(c[1][3]);
+		adyacentes.push(c[1][5]);
+		break;
+
+		case c[1][3]:
+		adyacentes.push(c[1][4]);
+		adyacentes.push(c[1][2]);
+		break;
+
+		case c[1][2]:
+		adyacentes.push(c[2][2]);
+		adyacentes.push(c[1][3]);
+		break;
+
+		case c[1][5]:
+		adyacentes.push(c[1][4]);
+		adyacentes.push(c[1][6]);
+		break;
+
+		case c[1][6]:
+		adyacentes.push(c[1][5]);
+		break;
+
+		case c[2][2]:
+		adyacentes.push(c[1][2]);
+		break;
+
+		case c[2][6]:
+		adyacentes.push(c[4][7]);
+		break;
+
+		case c[2][7]:
+		adyacentes.push(c[4][7]);
+		break;
+
+		case c[2][8]:
+		adyacentes.push(c[4][7]);
+		break;
+
+		case c[3][1]:
+		adyacentes.push(c[3][2]);
+		break;
+
+		case c[3][2]:
+		adyacentes.push(c[3][1]);
+		adyacentes.push(c[3][3]);
+		break;
+
+		case c[3][3]:
+		adyacentes.push(c[3][2]);
+		adyacentes.push(c[3][5]);
+		break;
+
+		case c[3][5]:
+		adyacentes.push(c[3][6]);
+		adyacentes.push(c[3][3]);
+		break;
+
+		case c[3][6]:
+		adyacentes.push(c[3][5]);
+		adyacentes.push(c[4][7]);
+		break;
+
+		case c[4][1]:
+		adyacentes.push(c[5][1]);
+		break;
+
+		case c[4][3]:
+		adyacentes.push(c[5][3]);
+		break;
+
+		case c[4][6]:
+		adyacentes.push(c[5][6]);
+		adyacentes.push(c[4][7]);
+		break;
+
+		case c[5][1]:
+		adyacentes.push(c[4][1]);
+		break;
+
+		case c[5][3]:
+		adyacentes.push(c[4][3]);
+		adyacentes.push(c[5][6]);
+		break;
+
+		case c[5][6]:
+		adyacentes.push(c[4][6]);
+		adyacentes.push(c[5][3]);
+		adyacentes.push(c[5][7]);
+		break;
+
+		case c[5][7]:
+		adyacentes.push(c[5][6]);
+		adyacentes.push(c[4][7]);
+		break;
+	}
+
+
+	return adyacentes;
+}
+
+function updateMover() //Función expansión de update para el modo mover.
+{
+	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+	if (move) //Si se está en el modo mover.
+	{
+		var adyacentes = CasillasAd(p.getJugadores()[0].getCasilla()); //Guardamos las casillas adyacentes.
+
+		for(var i = 0; i < adyacentes.length; i++) //Pintamos las casillas adyacentes de rojo.
+		{
+			adyacentes[i].getGraphics().destroy(); //Limpiamos la casilla.
+			
+			if(adyacentes[i] != (c[4][7]))
+			{
+				adyacentes[i].pintRect(0xff0000,0.3); //Pintamos de rojo la casilla.
+			}
+			else
+			{
+				adyacentes[i].pintRect(0x00ff00,0.3); //Pintamos de verde la casilla.
+			}
+		}
+
+ 		//Movimiento.
+		if((game.input.activePointer.isDown)) //Si se pulsa el ratón.
+	 	{
+ 			for (var i = 0; i < 7; i++)
+			{
+				for(var j = 0; j < 9; j++)
+				{
+					if(c[i][j] instanceof Casilla) //Si la posición del tablero es una casilla.
+					{
+						var rect = c[i][j].getRect(); //Guardamos el rectángulo de la casilla.
+
+						if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y) && (c[i][j].getColor() == 0xff0000 || c[i][j].getColor() == 0x00ff00)) //Si el ratón está encima del rectángulo y es rojo o verde.
+						{
+							p.getJugadores()[0].setCasilla(i,j); //Fijamos la casilla del jugador a la nueva.
+							
+							//Calculamos las coordenadas de destino de la casilla nueva como la posición de ésta mas la mitad del sprite (para centrarlo).
+							movex = Math.round(c[i][j].getPos()[0]-28.5);
+							movey = Math.round(c[i][j].getPos()[1]-36.25);
+
+   							moving = true; //Fijamos a true el booleano de animación de movimiento.
+
+							p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+						}
+					}
+				}
+			}
+
+			move = false;
+
+			//Limpiamos el tablero.
+			for (var i = 0; i < 7; i++)
+			{
+				for(var j = 0; j < 9; j++)
+				{
+					if(c[i][j] instanceof Casilla)
+					{
+						c[i][j].setColor(0xFFFFFF);
+						c[i][j].getGraphics().destroy();
+					}
+				}
+			}
+		}
+	} 
+
+	if (game.input.x !=0 || game.input.y != 0) //Si el ratón no se ha pasado por el canvas.
+	{
+		//Iluminación del cursor.
+	 	for (var i = 0; i < 7; i++)
+		{
+			for(var j = 0; j < 9; j++)
+			{
+				if(c[i][j] instanceof Casilla)
+				{
+					var rect = c[i][j].getRect();
+
+					if (c[i][j].getColor() != 0xff0000 && c[i][j].getColor() != 0x00ff00) //Si el color no es rojo ni verde.
+					{
+						c[i][j].getGraphics().destroy(); //Destruimos el color.
+					}
+							
+					if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y)) //Si el rectángulo está debajo del cursor.
+					{
+						if (c[i][j].getColor() != 0xff0000 && c[i][j].getColor() != 0x00ff00) //Si el color no es rojo ni verde.
+						{
+							c[i][j].pintRect(0xFFFFFF,0.6); //Pintamos de blanco.
+						}
+						else if (c[i][j].getColor() == 0xff0000)
+						{
+							c[i][j].getGraphics().destroy();
+							c[i][j].pintRect(0xff0000,0.8); //Pintamos de rojo oscuro.
+						}
+						else if (c[i][j].getColor() == 0x00ff00)
+						{
+							c[i][j].getGraphics().destroy();
+							c[i][j].pintRect(0x00ff00,0.8);
+						}
+					} 
+				}
+			}
+		}
+	}
+
+	if (moving) //Si se está moviendo con animación.
+	{
+		if (movey != p.getJugadores()[0].getPersonaje().getSprite().y) //Distintas en el eje y.
+		{
+			if (movey > p.getJugadores()[0].getPersonaje().getSprite().y) //El destino está abajo.
+			{
+				p.getJugadores()[0].getPersonaje().getSprite().y += 1;
+				p.getJugadores()[0].getPersonaje().getSprite().animations.play('down', 6, true);
+			}
+			else if (movey < p.getJugadores()[0].getPersonaje().getSprite().y) //El destino está arriba.
+			{
+				p.getJugadores()[0].getPersonaje().getSprite().y -= 1;
+				p.getJugadores()[0].getPersonaje().getSprite().animations.play('up', 6, true);
+			}
+		}
+		else //Iguales en el eje y.
+		{
+			if (movex != p.getJugadores()[0].getPersonaje().getSprite().x) //Distintas en el eje x.
+			{
+				if (movex > p.getJugadores()[0].getPersonaje().getSprite().x) //El destino está a la derecha.
+				{
+					p.getJugadores()[0].getPersonaje().getSprite().x += 1;
+					p.getJugadores()[0].getPersonaje().getSprite().animations.play('right', 6, true);
+				}
+				else if (movex < p.getJugadores()[0].getPersonaje().getSprite().x) //El destino está a la izquierda.
+				{
+					p.getJugadores()[0].getPersonaje().getSprite().x -= 1;
+					p.getJugadores()[0].getPersonaje().getSprite().animations.play('left', 6, true);
+				}
+			}
+		}
+
+		if (movex == p.getJugadores()[0].getPersonaje().getSprite().x && movey == p.getJugadores()[0].getPersonaje().getSprite().y) //Iguales en el eje x y en el eje y.
+		{
+			//Reseteamos.
+			movex = 0;
+			movey = 0;
+			moving = false;
+
+			//Paramos las animaciones.
+			p.getJugadores()[0].getPersonaje().getSprite().animations.stop();
+			p.getJugadores()[0].getPersonaje().getSprite().frame = 0;
+		}
+	}
+}
+
 
 //////////////////////////////////////// Objetos /////////////////////////////////////////
 
@@ -281,24 +530,33 @@ function Partida(numJ) //Objeto Partida.
 
 	//Funciones.
 	this.init = function() //Función que inicializa la partida.
-	{
-		//Seleccionamos el mapa.
-		var map = 1;
-		mapa = new Mapa(map);
-
+	{		
 		//Creamos los jugadores.
 		for(var i = 0; i < njug; i++)
 		{
 			jugadores[i] = new Jugador();
 		}
 
+		//Creamos el mapa.
+		mapa = new Mapa(1);
 		mapa.init(); //Inicializamos el mapa.
+
+		//Creamos los enemigos inciales.
+		for (var i = 0; i < 1; i++)
+		{
+			enemigos[i] = new Enemigo(1);
+		}
+
+		enemigos[0].setCasilla(2, 4);
+		enemigos[0].init();
 
 		//Seleccionamos los personajes.
 		jugadores[0].setPersonaje(new Personaje("Rick"));
-		jugadores[0].getPersonaje().init();
 
-		
+		for(var i = 0; i < njug; i++)
+		{
+			jugadores[0].getPersonaje().init();
+		}
 	}
 
 	//Getters.
@@ -306,6 +564,12 @@ function Partida(numJ) //Objeto Partida.
 	{
 		return jugadores;
 	}
+
+	this.getEnemigos = function()
+	{
+		return enemigos;
+	}
+
 	this.getMapa = function()
 	{
 		return mapa;
@@ -321,12 +585,20 @@ function Jugador() //Objeto Jugador.
 	var accionesDisp = 4; //Acciones disponibles del jugador.
 	var casilla = [0,4]; //Índice i y j de la casilla en que está.
 
-	//Funciones.
+	//Getters.	
+	this.getPersonaje = function()
+	{
+		return personaje;
+	} 
 
-	//Getters.
 	this.getAccionesDisp = function()
 	{
 		return accionesDisp;
+	}
+
+	this.getCasilla = function()
+	{
+		return casilla;
 	}
 
 	//Setters.
@@ -334,20 +606,14 @@ function Jugador() //Objeto Jugador.
 	{
 		personaje = p;
 	} 
-	this.getPersonaje = function()
-	{
-		return personaje;
-	} 
 
 	this.setAccionesDisp = function(a)
 	{
 		accionesDisp = a;
 	}
 
-	this.getCasilla = function(){
-		return casilla;
-	}
-	this.setCasilla = function(i,j){
+	this.setCasilla = function(i, j)
+	{
 		casilla = [i,j];
 	}
 }
@@ -359,31 +625,139 @@ function Personaje(nom) //Objeto Personaje.
 	var id = nom; //ID del personaje.
 	var salud = 3; //Salud del personaje.
 	var dados; //Dados del personaje.
+	var sprite; //Sprite del personaje.
 	var inventario = new Array(3); //Inventario de objetos del personaje.
-	var sprite;
 
 	//Funciones.
-	this.init = function()
+	this.init = function() //Función que inicializa el personaje.
 	{
-		sprite = game.add.sprite(475, 0, 'S_Rick');
+		//Inicializamos los datos del personaje determinado.
+		switch (id)
+		{
+			case 'Rick':
+			dados = 4;
+			sprite = game.add.sprite(472, 0, 'S_Rick');
+			break;
 
+			case 'Morty':
+			dados = 2;
+			sprite = game.add.sprite(472, 0, 'S_Morty');
+			break;
 
-	   // sprite.animations.add('idle', 16, true);
+			case 'Summer':
+			dados = 3;
+			sprite = game.add.sprite(472, 0, 'S_Summer');
+			break;
 
-        
-       sprite.frame = 0;
+			case 'Beth':
+			dados = 2;
+			sprite = game.add.sprite(472, 0, 'S_Beth');
+			break;
 
-	}
+			case 'Jerry':
+			dados = 1;
+			sprite = game.add.sprite(472, 0, 'S_Jerry');
+			break;
 
-	this.movePersonaje = function(x,y)
-	{
-		//sprite.animations.play('idle');
-		sprite.x = x;
-		sprite.y = y;
+			case 'MrP':
+			dados = 3;
+			sprite = game.add.sprite(472, 0, 'S_MrP');
+			break;
+		}
+
+		//Añadimos las animacones.
+		p.getJugadores()[0].getPersonaje().getSprite().animations.add('down', [0,1,2,3]);
+		p.getJugadores()[0].getPersonaje().getSprite().animations.add('left', [4,5,6,7]);
+		p.getJugadores()[0].getPersonaje().getSprite().animations.add('right', [8,9,10,11]);
+		p.getJugadores()[0].getPersonaje().getSprite().animations.add('up', [12,13,14,15]);
+
         sprite.frame = 0;
-
 	}
 
+	//Getters.
+	this.getSalud = function()
+	{
+		return salud;
+	}
+
+	this.getDados = function()
+	{
+		return dados;
+	}
+
+	this.getSprite = function()
+	{
+		return sprite;
+	}
+
+	//Setters.
+	this.setSalud = function(s)
+	{
+		salud = s;
+	}
+}
+
+
+function Enemigo(tip) //Objeto Enemigo.
+{
+	//Variables.
+	var tipo = tip; //Tipo de enemigo (1-Normal, 2-MiniBoss, 3-Boss).
+	var salud; //Salud del enemigo.
+	var dados; //Dados del enemigo.
+	var sprite; //Sprite del enemigo.
+	var casilla = new Array(); //Índice i y j de la casilla en que está.
+
+	//Funciones.
+	this.init = function() //Función que inicializa el enemigo.
+	{
+		if (tipo == 1) //Enemigo normal.
+		{
+			salud = 3;
+			dados = 1;
+			sprite = game.add.sprite(475, 200, 'S_Meeseek1');
+			sprite.frame = 0;
+		}
+		else if (tipo == 2) //MiniBoss.
+		{
+			salud = 5;
+			dados = 3;
+			sprite = game.add.sprite(475, 200, 'S_Meeseek2');
+			sprite.frame = 0;
+		}
+		else if (tipo == 3) //Boss.
+		{
+			salud = 8;
+			dados = 5;
+			sprite = game.add.sprite(475, 200, 'AS');
+		}
+	}
+
+	//Getters.
+	this.getCasilla = function()
+	{
+		return casilla;
+	}
+
+	this.getSalud = function()
+	{
+		return salud;
+	}
+
+	this.getSprite = function()
+	{
+		return sprite;
+	}
+
+	//Setters.
+	this.setCasilla = function(i,j)
+	{
+		casilla = [i,j];
+	}
+
+	this.setSalud = function(s)
+	{
+		salud = s;
+	}
 }
 
 
@@ -397,51 +771,45 @@ function Mapa(tip) //Objeto Mapa.
 	//Funciones.
 	this.init = function() //Función que inicializa el mapa.
 	{
-		if (tipo == 1) //Si el mapa es de tipo 1.
+		fondo = game.add.sprite(0,0,'Map1'); //Creamos el fondo.
+
+		for(var i = 0; i < 7; i++) //Creamos un tablero de 7x9.
 		{
-			fondo = game.add.sprite(0,0,'Map1'); //Creamos el fondo.
-
-			for(var i = 0; i < 7; i++) //Creamos un tablero de 7x9.
-			{
-				Tablero[i] = new Array (9);
-			}
-
-			this.fillTab(); //Rellenamos el tablero.
+			Tablero[i] = new Array (9);
 		}
+
+		this.fillTab(); //Rellenamos el tablero.
 	}
 
 	this.fillTab = function() //Función que rellena el tablero con objetos casilla, según el mapa.
 	{
-		if (tipo == 1) //Si el mapa es de tipo 1.
+		//Rellenamos el tablero como undefined, inicialmente.
+		for (var i = 0; i < 7; i++)
 		{
-			//Rellenamos el tablero como undefined, inicialmente.
-			for (var i=0; i<7; i++)
+			for(var j = 0; j < 9; j++)
 			{
-				for(var j=0; j<9; j++)
-				{
-					Tablero[i][j] = undefined;
-				}
+				Tablero[i][j] = undefined;
 			}
-
-			//Casilla objetivo.
-			Tablero[4][7] = new Casilla(false,825,325,175,175);
-
-			//Casillas exteriores.
-			Tablero[0][4] = new Casilla(false,450,0,100,50); Tablero[1][4] = new Casilla(false,450,75,100,100); Tablero[2][0] = new Casilla(false,0,200,50,100);
-			Tablero[2][1] = new Casilla(false,75,200,100,100); Tablero[2][2] = new Casilla(false,200,200,100,100); Tablero[2][4] = new Casilla(false,450,200,100,100);
-			Tablero[2][3] = new Casilla(false,325,200,100,100); Tablero[2][5] = new Casilla(false,575,200,75,100);
-			Tablero[2][6] = new Casilla(false,700,200,100,100); Tablero[2][7] = new Casilla(false,825,200,100,100); Tablero[2][8] = new Casilla(false,950,200,50,100);
-			Tablero[3][0] = new Casilla(false,0,325,50,100); Tablero[3][2] = new Casilla(false,200,325,100,100); Tablero[3][6] = new Casilla(false,700,325,100,100);
-			Tablero[4][0] = new Casilla(false,0,450,50,100); Tablero[4][1] = new Casilla(false,75,450,100,100); Tablero[4][2] = new Casilla(false,200,450,100,100);
-			Tablero[4][3] = new Casilla(false,325,450,100,100); Tablero[4][4] = new Casilla(false,450,450,100,100); Tablero[4][5] = new Casilla(false,575,450,100,100);
-			Tablero[4][6] = new Casilla(false,700,450,100,100); Tablero[5][2] = new Casilla(false,200,575,100,100); Tablero[6][2] = new Casilla(false,200,700,100,50);
-
-			//Casillas interiores.
-			Tablero[1][2] = new Casilla(true,0,0,250,170); Tablero[1][3] = new Casilla(true,250,0,170,170); Tablero[1][5] = new Casilla(true,575,0,175,175); 
-			Tablero[1][6] = new Casilla(true,750,0,250,175); Tablero[3][1] = new Casilla(true,75,325,100,100); Tablero[3][3] = new Casilla(true,325,325,175,100);
-			Tablero[3][5] = new Casilla(true,500,325,175,100); Tablero[5][1] = new Casilla(true,0,575,175,175); Tablero[5][3] = new Casilla(true,325,575,175,175);
-			Tablero[5][6] = new Casilla(true,500,575,250,175); Tablero[5][7] = new Casilla(true,750,575,300,175);
 		}
+
+		//Casilla objetivo.
+		Tablero[4][7] = new Casilla(true,825,325,175,175);
+
+		//Casillas exteriores.
+		Tablero[0][4] = new Casilla(false,450,0,100,50); Tablero[1][4] = new Casilla(false,450,75,100,100); Tablero[2][0] = new Casilla(false,0,200,50,100);
+		Tablero[2][1] = new Casilla(false,75,200,100,100); Tablero[2][2] = new Casilla(false,200,200,100,100); Tablero[2][4] = new Casilla(false,450,200,100,100);
+		Tablero[2][3] = new Casilla(false,325,200,100,100); Tablero[2][5] = new Casilla(false,575,200,75,100);
+		Tablero[2][6] = new Casilla(false,700,200,100,100); Tablero[2][7] = new Casilla(false,825,200,100,100); Tablero[2][8] = new Casilla(false,950,200,50,100);
+		Tablero[3][0] = new Casilla(false,0,325,50,100); Tablero[3][2] = new Casilla(false,200,325,100,100); Tablero[3][6] = new Casilla(false,700,325,100,100);
+		Tablero[4][0] = new Casilla(false,0,450,50,100); Tablero[4][1] = new Casilla(false,75,450,100,100); Tablero[4][2] = new Casilla(false,200,450,100,100);
+		Tablero[4][3] = new Casilla(false,325,450,100,100); Tablero[4][4] = new Casilla(false,450,450,100,100); Tablero[4][5] = new Casilla(false,575,450,100,100);
+		Tablero[4][6] = new Casilla(false,700,450,100,100); Tablero[5][2] = new Casilla(false,200,575,100,100); Tablero[6][2] = new Casilla(false,200,700,100,50);
+
+		//Casillas interiores.
+		Tablero[1][2] = new Casilla(true,0,0,250,170); Tablero[1][3] = new Casilla(true,250,0,170,170); Tablero[1][5] = new Casilla(true,575,0,175,175); 
+		Tablero[1][6] = new Casilla(true,750,0,250,175); Tablero[3][1] = new Casilla(true,75,325,100,100); Tablero[3][3] = new Casilla(true,325,325,175,100);
+		Tablero[3][5] = new Casilla(true,500,325,175,100); Tablero[5][1] = new Casilla(true,0,575,175,175); Tablero[5][3] = new Casilla(true,325,575,175,175);
+		Tablero[5][6] = new Casilla(true,500,575,250,175); Tablero[5][7] = new Casilla(true,750,575,300,175);
 	}
 	
 	//Getters.
@@ -455,61 +823,66 @@ function Mapa(tip) //Objeto Mapa.
 function Casilla(inter, x, y, ancho, alto) //Objeto Casilla.
 {
 	//Variables.
-	var graphics = game.add.graphics();
 	var ruido = 0; //Ruido de la casilla.
 	var numPersonajes = 0; //Personajes en la casilla.
 	var numEnemigos = 0; //Enemigos en la casilla.
 	var interior = inter; //Booleano sobre si la casilla es interior o no.
+	var colorCasilla; //Color de la casilla.
 	var rectan = new Phaser.Rectangle(x,y,ancho,alto); //Rectángulo visual de la casilla.
-	var colorCasilla;
+	var graphics = game.add.graphics(); //Variable para dibujar gráficos de la casilla.
 
 	//Funciones.
 	this.pintRect = function(color, al) //Función que pinta el rectángulo.
-	{
-		graphics = game.add.graphics();
-		graphics.beginFill(color);
-		graphics.alpha= al;
-		graphics.drawRect(x, y, ancho, alto);
+	{		
 		colorCasilla = color;
+
+		graphics = game.add.graphics();
+		graphics.alpha = al;
+		graphics.beginFill(colorCasilla);
+		graphics.drawRect(x, y, ancho, alto);
 	}
-	this.getGraphics = function()
-	{
-		return graphics;
-	}
-	
 
 	//Getters.
 	this.getRect = function()
 	{
 		return rectan;
 	}
+
+	this.getPos = function()
+	{
+		return [rectan.x+(ancho/2), rectan.y+(alto/2)];
+	}
+
 	this.getColor = function()
 	{
 		return colorCasilla;
 	}
 
+	this.getGraphics = function()
+	{
+		return graphics;
+	}
+
+	this.getEnemigos = function()
+	{
+		return numEnemigos;
+	}
+
+	this.getInterior = function()
+	{
+		return interior;
+	}
+
+	//Setters.
 	this.setColor = function(col)
 	{
 		colorCasilla = col;
 	}
 
-	this.getX = function(){
-		return rectan.x;
+	this.setEnemigos = function(ne)
+	{
+		numEnemigos = ne;
 	}
-	this.getY = function(){
-		return rectan.y;
-	}
-}
-
-
-function Enemigo(tip) //Objeto Enemigo.
-{
-	//Variables.
-	var tipo = tip; //Tipo de enemigo (1-Normal, 2-MiniBoss, 3-Boss).
-	var salud; //Salud del enemigo.
-	var dados; //Dados del enemigo.
-
-	//Funciones.
 }
 
 
