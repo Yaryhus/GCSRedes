@@ -14,6 +14,7 @@ var njug = 1; //Número de jugadores de la partida.
 var started = false; //Booleano de si ha empezado la partida.
 var esturno = false; //Booleano auxiliar para almacenar información del turno del jugador.
 
+var turno = 1;
 var move = false; //Booleano auxiliar para almacenar información de si el modo mover está activo.
 var moving = false; //Booleano auxiliar para almacenar información de si se ha finalizado la animación de mover.
 var movex = 0; //Variable auxiliar para almacenar la x destino al moverse.
@@ -116,12 +117,20 @@ function update() //Función update: actualiza el juego.
 		esturno = (p.getJugadores()[0].getAccionesDisp() > 0) //Fijamos el booleano a true si: acciones > 0.
 		document.getElementById("Acciones").innerHTML = "Acciones: " + p.getJugadores()[0].getAccionesDisp(); //Mostramos las acciones disponibles.
 
-		if (!esturno) //Si ha terminado el turno del jugador, turno de la máquina.
+		if (!esturno && !moving) //Si ha terminado el turno del jugador, turno de la máquina.
 		{
-			//alert("Se acabó el turno.") //Debug.
+			alert("Se acabó el turno del jugador.") //Debug.
 
-			p.getJugadores()[0].setAccionesDisp(4); //Reseteamos las acciones del jugador.
+			//MoverEnemigo();
+			atacarEnemigo();
+			spawnEnemigo();
+			p.getJugadores()[0].setAccionesDisp(4);
+			 //Reseteamos las acciones del jugador.
+			turno++;
+			alert("Se acabó el turno de la máquina. Ronda = " + turno) //Debug.
 		}
+
+
 	}
 
 
@@ -175,7 +184,7 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 		{
 			for(var i = 0; i < p.getEnemigos().length; i++) //Recorremos el array de enemigos.
 			{
-				if((p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) 
+				if(p.getEnemigos()[i] != undefined && (p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) 
 				&& (p.getEnemigos()[i].getCasilla()[1] == p.getJugadores()[0].getCasilla()[1])) //Si [i,j] del enemigo son iguales que las del jugador.
 				{
 					var tirada = Dados(p.getJugadores()[0].getPersonaje().getDados(), 3); //Tiramos los dados (n dados del personaje, 50% acierto).
@@ -194,9 +203,81 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 	}
 }
 
+function atacarEnemigo() //Función llamada al pulsar el botón "Atacar".
+{
+
+	for(var i = 0; i < p.getEnemigos().length; i++) //Recorremos el array de enemigos.
+			{
+				if(p.getEnemigos()[i] != undefined && (p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) 
+				&& (p.getEnemigos()[i].getCasilla()[1] == p.getJugadores()[0].getCasilla()[1])) //Si [i,j] del enemigo son iguales que las del jugador.
+				{
+					var tiradaE = Dados(p.getEnemigos()[i].getDados(), 6); //Tiramos los dados (n dados del personaje, 50% acierto).
+					console.log("TiradaE = " + tiradaE);
+					
+					var tiradaJ = Dados(p.getJugadores()[0].getPersonaje().getDados(),1);
+					console.log("TiradaJ = " + tiradaJ);
+
+					p.getJugadores()[0].getPersonaje().setSalud(p.getJugadores()[0].getPersonaje().getSalud() - Math.max(tiradaE-tiradaJ, 0));
+
+					console.log("salud = " + p.getJugadores()[0].getPersonaje().getSalud());
+
+					if(p.getJugadores()[0].getPersonaje().getSalud() <= 0) //Si el enemigo pierde toda su salud.
+					{
+						p.getJugadores()[0].getPersonaje().getSprite().destroy(); //Eliminamos el sprite.
+						alert('Has perdido, parguela.')
+					}
+
+				}
+			}
+}
+
+function spawnEnemigo()
+{
+	var enemigosN = new Array();
+	var numEn = 3 + turno;
+	//Switch case del infierno
+
+	for(var i = 0 ; i < numEn; i++)
+	{
+		enemigosN[i] = new Enemigo(1);
+
+		var spawnElegido = Math.random() % 4;
+		//var spawnElegido = getRandom(0 , 3);
+		
+		if(spawnElegido = 0)
+		{
+			enemigosN[i].setCasilla(2, 0);
+
+		}
+		if(spawnElegido = 1)
+		{
+			enemigosN[i].setCasilla(4, 0);
+		}
+		if(spawnElegido = 2)
+		{
+			enemigosN[i].setCasilla(2, 8);
+		}
+		if(spawnElegido = 3)
+		{
+			enemigosN[i].setCasilla(6, 1);
+		}
+
+		enemigosN[i].init();
+
+	}
+
+	for(var j=0;j<p.getEnemigos().length;j++)
+	{
+		if(p.getEnemigos()[i] != undefined)
+		enemigosN.push(p.getEnemigos()[i]);
+	}
+
+	p.setEnemigos(enemigosN); 
+}
 
 ////////////////////////////////// Funciones auxiliares //////////////////////////////////
 
+//Añadir function getRandom
 
 function Dados(num, prob) //Función auxiliar para el lanzamiento aleatorio de dados.
 {
@@ -478,12 +559,12 @@ function updateMover() //Función expansión de update para el modo mover.
 			if (movey > p.getJugadores()[0].getPersonaje().getSprite().y) //El destino está abajo.
 			{
 				p.getJugadores()[0].getPersonaje().getSprite().y += 1;
-				p.getJugadores()[0].getPersonaje().getSprite().animations.play('down', 6, true);
+				p.getJugadores()[0].getPersonaje().getSprite().animations.play('down', 12, true);
 			}
 			else if (movey < p.getJugadores()[0].getPersonaje().getSprite().y) //El destino está arriba.
 			{
 				p.getJugadores()[0].getPersonaje().getSprite().y -= 1;
-				p.getJugadores()[0].getPersonaje().getSprite().animations.play('up', 6, true);
+				p.getJugadores()[0].getPersonaje().getSprite().animations.play('up', 12, true);
 			}
 		}
 		else //Iguales en el eje y.
@@ -493,12 +574,12 @@ function updateMover() //Función expansión de update para el modo mover.
 				if (movex > p.getJugadores()[0].getPersonaje().getSprite().x) //El destino está a la derecha.
 				{
 					p.getJugadores()[0].getPersonaje().getSprite().x += 1;
-					p.getJugadores()[0].getPersonaje().getSprite().animations.play('right', 6, true);
+					p.getJugadores()[0].getPersonaje().getSprite().animations.play('right', 12, true);
 				}
 				else if (movex < p.getJugadores()[0].getPersonaje().getSprite().x) //El destino está a la izquierda.
 				{
 					p.getJugadores()[0].getPersonaje().getSprite().x -= 1;
-					p.getJugadores()[0].getPersonaje().getSprite().animations.play('left', 6, true);
+					p.getJugadores()[0].getPersonaje().getSprite().animations.play('left', 12, true);
 				}
 			}
 		}
@@ -573,6 +654,10 @@ function Partida(numJ) //Objeto Partida.
 	this.getMapa = function()
 	{
 		return mapa;
+	}
+	this.setEnemigos = function(i)
+	{
+		enemigos = i;
 	}
 }
 
@@ -746,6 +831,11 @@ function Enemigo(tip) //Objeto Enemigo.
 	this.getSprite = function()
 	{
 		return sprite;
+	}
+
+	this.getDados = function()
+	{
+		return dados;
 	}
 
 	//Setters.
