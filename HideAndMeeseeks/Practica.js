@@ -99,10 +99,13 @@ function create() //Función create: inicia el juego.
     keyA.onDown.add(atacarclick, this);
 	var keyM = game.input.keyboard.addKey(Phaser.Keyboard.M);
     keyM.onDown.add(moverclick, this);
+    var keyR = game.input.keyboard.addKey(Phaser.Keyboard.R);
+    keyR.onDown.add(ruidoclick, this);
 
 	//Creamos los manejadores de eventos.
 	document.getElementById("mover").addEventListener("click", moverclick);
 	document.getElementById("atacar").addEventListener("click", atacarclick);
+	document.getElementById("ruido").addEventListener("click", ruidoclick);
 }
 
 
@@ -121,9 +124,9 @@ function update() //Función update: actualiza el juego.
 		{
 			alert("Se acabó el turno del jugador.") //Debug.
 
-			//MoverEnemigo();
+			moverEnemigos();
 			atacarEnemigo();
-			spawnEnemigo();
+			//spawnEnemigo();
 			p.getJugadores()[0].setAccionesDisp(4);
 			 //Reseteamos las acciones del jugador.
 			turno++;
@@ -174,6 +177,23 @@ function moverclick() //Función llamada al pulsar el botón "Mover".
  		}
 	}
 }
+
+
+function ruidoclick() //Función llamada al pulsar el botón "Hacer Ruido".
+{
+	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+	if(!moving) //Si no se está reproduciendo la animación de mover.
+	{
+		c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].setRuido( c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].getRuido() + 5);
+	 	alert("HAS HECHO RUIDO, QUE ESTOY DURMIENDO");
+
+	 	p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp()-1); //Disminuimos las acciones del jugador en 1.
+	}
+
+
+}
+
 
 
 function atacarclick() //Función llamada al pulsar el botón "Atacar".
@@ -241,8 +261,8 @@ function spawnEnemigo()
 	{
 		enemigosN[i] = new Enemigo(1);
 
-		var spawnElegido = Math.random() % 4;
-		//var spawnElegido = getRandom(0 , 3);
+		//var spawnElegido = Math.random() % 4;
+		var spawnElegido = getRandom(0 , 3);
 		
 		if(spawnElegido = 0)
 		{
@@ -277,7 +297,6 @@ function spawnEnemigo()
 
 ////////////////////////////////// Funciones auxiliares //////////////////////////////////
 
-//Añadir function getRandom
 
 function Dados(num, prob) //Función auxiliar para el lanzamiento aleatorio de dados.
 {
@@ -448,6 +467,16 @@ function CasillasAd(base) //Función que recibe un array índice de casilla y de
 	return adyacentes;
 }
 
+function getRandom(min, max) //Esta función recibe un máximo y un mínimo y devuelve un número aleatorio entre ambos.
+{
+ if (min == 0) //Ejemplo: para 1 y 9, se generarían todos los números, pero para 0 y 9, sólo hasta el 8, así que modificamos a 0 y 10.
+  max += 1;
+
+ return Math.floor((Math.random() * max) + min);
+}
+
+
+
 function updateMover() //Función expansión de update para el modo mover.
 {
 	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
@@ -483,7 +512,11 @@ function updateMover() //Función expansión de update para el modo mover.
 
 						if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y) && (c[i][j].getColor() == 0xff0000 || c[i][j].getColor() == 0x00ff00)) //Si el ratón está encima del rectángulo y es rojo o verde.
 						{
+
+   							evadir();
+   							c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].setPersonajes(c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].getPersonajes()-1);
 							p.getJugadores()[0].setCasilla(i,j); //Fijamos la casilla del jugador a la nueva.
+							c[i][j].setPersonajes(c[i][j].getPersonajes()+1);
 							
 							//Calculamos las coordenadas de destino de la casilla nueva como la posición de ésta mas la mitad del sprite (para centrarlo).
 							movex = Math.round(c[i][j].getPos()[0]-28.5);
@@ -598,6 +631,112 @@ function updateMover() //Función expansión de update para el modo mover.
 	}
 }
 
+
+function moverEnemigos() //Función que mueve los enemigos del tablero.
+{
+ var e = p.getEnemigos(); //Guardamos los enemigos de la partida.
+ var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+ for(var i = 0; i < e.length; i++) //Por cada enemigo.
+ {
+  //Atacar a los jugadores.
+
+
+  if ((c[e[i].getCasilla()[0]][e[i].getCasilla()[1]].getPersonajes() == 0))//&& (e[i].getTipo() != 3)) //No hay un personaje en la casilla en la que está el enemigo (se mueve), a no ser que sea un boss.
+  {
+   var adyacentes = CasillasAd(e[i].getCasilla()); //Guardamos las casillas adyacentes.
+   
+   //Ordenamos el array en función del ruido, de mayor a menor.
+   var res;
+   var t;
+   do 
+      {
+          res = false;
+          for (var j = 0; j < adyacentes .length - 1; j++) 
+          {
+              if (adyacentes[j].getRuido() < adyacentes[j+1].getRuido()) 
+              {
+                  var t = adyacentes[j];
+                  adyacentes[j] = adyacentes [j+1];
+                  adyacentes[j+1] = t;
+                  res = true;
+              }
+          }
+      } 
+      while (res);
+
+
+	
+
+
+	if(adyacentes[0].getRuido() > 0) //Hay ruido en la casilla, movemos a esa casilla.
+	   {
+	     t = adyacentes[0];
+	   }
+   else //No hay ruido en la casilla, movemos a una casilla aleatoria.
+	  {
+	   do {
+	     t = adyacentes[getRandom(0, adyacentes.length-1)];
+	   } while (t == c[4][7])
+	  }
+
+
+    for (var u = 0; u < 7; u++)
+    {
+     for(var v = 0; v < 9; v++)
+     {
+      if(c[u][v] instanceof Casilla && c[u][v] == t) //Si la posición del tablero es una casilla, y es la misma que la buscada.
+      {
+        e[i].setCasilla(u, v); //Movemos a la casilla [i,j].
+        e[i].getSprite().x = c[u][v].getPos()[0] - 28.5;
+        e[i].getSprite().y = c[u][v].getPos()[1] - 36.25;
+      }
+
+      if(c[u][v] instanceof Casilla)
+  	    c[u][v].setRuido(0);
+
+     }
+    }
+
+
+
+  }
+ }
+}
+
+
+
+
+
+function evadir() 
+{
+	for(var i = 0; i<p.getEnemigos().length; i++){
+		if((p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) && (p.getEnemigos()[i].getCasilla()[1] == p.getJugadores()[0].getCasilla()[1])){
+			if (Dados(1,2) != 1){
+
+
+				p.getJugadores()[0].getPersonaje().setSalud(p.getJugadores()[0].getPersonaje().getSalud() - 1);
+
+					console.log("salud = " + p.getJugadores()[0].getPersonaje().getSalud());
+
+					if(p.getJugadores()[0].getPersonaje().getSalud() <= 0) //Si el enemigo pierde toda su salud.
+					{
+						p.getJugadores()[0].getPersonaje().getSprite().destroy(); //Eliminamos el sprite.
+						alert('Has perdido, parguela.')
+					}
+
+
+
+			}
+
+
+
+		}
+
+
+	}
+
+}
 
 //////////////////////////////////////// Objetos /////////////////////////////////////////
 
@@ -838,6 +977,11 @@ function Enemigo(tip) //Objeto Enemigo.
 		return dados;
 	}
 
+	this.getTipo = function()
+	{
+	  return tipo;
+	}	
+
 	//Setters.
 	this.setCasilla = function(i,j)
 	{
@@ -963,6 +1107,16 @@ function Casilla(inter, x, y, ancho, alto) //Objeto Casilla.
 		return interior;
 	}
 
+	this.getPersonajes = function()
+	{
+	 return numPersonajes;
+	}
+
+	this.getRuido = function()
+	 {
+	  return ruido;
+	 }
+
 	//Setters.
 	this.setColor = function(col)
 	{
@@ -973,6 +1127,19 @@ function Casilla(inter, x, y, ancho, alto) //Objeto Casilla.
 	{
 		numEnemigos = ne;
 	}
+
+	this.setRuido = function(ru)
+	{
+	  ruido = ru;
+	}
+
+	this.setPersonajes = function(per)
+	{
+		numPersonajes = per;
+	}
+
+
+
 }
 
 
