@@ -8,25 +8,87 @@ Grado en Diseño y Desarrollo de Videojuegos.
 /////////////////////////////////// Variables globales ///////////////////////////////////
 
 
-var game = new Phaser.Game(1000, 750, Phaser.CANVAS, 'phaser', { preload: preload, create: create, update: update }); //Creación del juego en Phaser.
+var game; //Creación del juego en Phaser.
 
-var njug = 1; //Número de jugadores de la partida.
-var turno = 1; //Variable que almacena el turno actual.
-var started = false; //Booleano de si ha empezado la partida.
-var esturno = false; //Booleano auxiliar para almacenar información del turno del jugador.
-var con = false; //Booleano auxiliar para indicar si se debe pulsar el botón de continuar.
-var fin = false; //Booleano auxiliar para indicar que se ha acabado la partida.
-var mouseoff = false; //Booleano auxiliar para indicar si el ratón está en el canvas.
-var aux = false; //Booleano auxiliar para diversas funciones.
+//Sonidos.
+var music;
+var S_Rick_spawn;
+var S_Rick_daño;
+var S_Rick_turno;
+var S_Meeseek_spawn1;
+var S_Meeseek_spawn2;
+var S_Meeseek_move;
+var S_IA_furia;
+var S_IA_RoundStart;
+var S_lose;
+var S_ruido;
+var S_punch;
+var S_win;
+var S_main;
 
-var move = false; //Booleano auxiliar para almacenar información de si el modo mover está activo.
-var moving = false; //Booleano auxiliar para almacenar información de si se ha finalizado la animación de mover.
-var movinge = false; //Booleano auxiliar para almacenar información de la animación de mover enemiga.
-var moveonce = false; //Booleano auxiliar para almacenar información de si los enemigos se han movido este turno.
-var movex = 0; //Variable auxiliar para almacenar la x destino al moverse.
-var movey = 0; //Variable auxiliar para almacenar la y destino al moverse.
+var njug; //Número de jugadores de la partida.
+var turno; //Variable que almacena el turno actual.
+var started; //Booleano de si ha empezado la partida.
+var esturno; //Booleano auxiliar para almacenar información del turno del jugador.
+var con; //Booleano auxiliar para indicar si se debe pulsar el botón de continuar.
+var fin; //Booleano auxiliar para indicar que se ha acabado la partida.
+var mouseoff; //Booleano auxiliar para indicar si el ratón está en el canvas.
+var aux; //Booleano auxiliar para diversas funciones.
+
+var move; //Booleano auxiliar para almacenar información de si el modo mover está activo.
+var moving; //Booleano auxiliar para almacenar información de si se ha finalizado la animación de mover.
+var movinge; //Booleano auxiliar para almacenar información de la animación de mover enemiga.
+var moveonce; //Booleano auxiliar para almacenar información de si los enemigos se han movido este turno.
+var movex; //Variable auxiliar para almacenar la x destino al moverse.
+var movey; //Variable auxiliar para almacenar la y destino al moverse.
 
 var p; //Instancia de la partida.
+
+
+///////////////////////////////////////// Main ///////////////////////////////////////////
+
+
+$(document).ready(function() //Función inicial.
+{ 
+	//Inicializamos las variables.
+	mute = false;
+	njug = 1;
+	turno = 0;
+	started = false;
+	esturno = false;
+	con = false;
+	fin = false;
+	move = false;
+	moving = false;
+	movex = 0;
+	movey = 0;
+
+	//Ocultamos los elementos adecuados.
+	$("#logo").show();
+	$("#Misc").show();
+	$("#Borderframe").hide();
+	$("#Notificaciones").hide();
+	$("#Barra").hide();
+})
+
+
+$(window).keypress(function (e)  //Función que detecta si se pulsa espacio para iniciar el juego.
+{
+	if (turno == 0 && (e.keyCode === 0 || e.keyCode === 32)) 
+	{
+	    e.preventDefault();
+
+	    //Mostramos los elementos adecuados.
+	    $("#logo").hide();
+	    $("#Misc").hide();
+	    $("#Borderframe").show();
+	    $("#Notificaciones").show();
+	    $("#Barra").show();
+
+	    turno++;
+	    game = new Phaser.Game(1000, 750, Phaser.CANVAS, 'phaser', { preload: preload, create: create, update: update }); //Creamos el juego.
+	}
+})
 
 
 //////////////////////////////////////// Phaser //////////////////////////////////////////
@@ -72,6 +134,17 @@ function preload() //Función preload: precarga los assets del juego.
 								  "Material/Sprites/summer.png");
 
 
+		/*
+		//Nombres y directorios de los sonidos.
+ 		var nombreSonido = new Array("S_Rick_spawn","S_Rick_daño","S_Rick_turno","S_Meeseek_spawn1","S_Meeseek_spawn2","S_Meeseek_move","S_IA_furia","S_IA_RoundStart","S_lose","S_ruido","S_punch","S_win","S_main");
+
+  		var dirSonido = new Array("Material/Sound/Rick/S_spawn.mp3","Material/Sound/Rick/S_daño.mp3","Material/Sound/Rick/S_turno.mp3",
+         						  "Material/Sound/Meeseek/S_spawn1.mp3","Material/Sound/Meeseek/S_spawn2.mp3","Material/Sound/Meeseek/S_move.mp3",
+         						  "Material/Sound/Extra/S_IA_furia.mp3","Material/Sound/Extra/S_IA_RoundStart.mp3","Material/Sound/Extra/S_lose.mp3",
+         						  "Material/Sound/Extra/S_ruido.mp3","Material/Sound/Extra/S_punch.mp3","Material/Sound/Extra/S_win.mp3","Material/Sound/Music/S_main.mp3");
+  		*/
+
+
 	//Precargamos los assets.
 	game.load.image('Logo', 'Material/Img/Otros/Logo.png');
 	game.load.image('Map1','Material/Img/Mapas/Map 1 - Bounds.png');
@@ -88,6 +161,13 @@ function preload() //Función preload: precarga los assets del juego.
 	{
 		game.load.spritesheet(nombreSprite[i], dirSprite[i], 57, 72.5, 16)
 	}
+
+	/*
+	for (var i = 0; i < 13; i++)
+	{
+		game.load.audio(nombreSonido[i], dirSonido[i]);
+	}
+	*/
 }
 
 
@@ -104,6 +184,30 @@ function create() //Función create: inicia el juego.
 	" Para ello, dispones de diversas acciones: <br /><br /> - Atacar: lanzar los dados de tu personaje para atacar a un enemigo de tu misma casilla. <br /> - Mover: moverse a una casilla adyacente (si hay algún enemigo en tu casilla, tirarás un dado para evadirlo)." + 
 	" <br /> - Hacer ruido: hacer ruido en una casilla para atraer a los enemigos de casillas adyacentes. <br /><br /> ¡Mucha Suerte! <br /><br /><br /> ----------------------------- <br /><br /><br /> Pulse 'Continuar' para comenzar la partida.";
 	
+
+	//Música y sonidos.
+	music = new sound("Material/Sound/Music/S_main.mp3");
+	S_Rick_spawn = new sound("Material/Sound/Rick/S_spawn.mp3");
+ 	S_Rick_daño = new sound("Material/Sound/Rick/S_daño.mp3");
+ 	S_Rick_turno = new sound("Material/Sound/Rick/S_turno.mp3");
+ 	S_Meeseek_spawn1 = new sound("Material/Sound/Meeseek/S_spawn1.mp3");
+ 	S_Meeseek_spawn2 = new sound("Material/Sound/Meeseek/S_spawn2.mp3");
+ 	S_Meeseek_move = new sound("Material/Sound/Meeseek/S_move.mp3");
+ 	S_IA_furia = new sound("Material/Sound/Extra/S_IA_furia.mp3");
+ 	S_IA_RoundStart = new sound("Material/Sound/Extra/S_IA_RoundStart.mp3");
+ 	S_lose = new sound("Material/Sound/Extra/S_lose.mp3");
+ 	S_ruido = new sound("Material/Sound/Extra/S_ruido.mp3");
+ 	S_punch = new sound("Material/Sound/Extra/S_punch.mp3");
+ 	S_win = new sound("Material/Sound/Extra/S_win.mp3");
+ 	S_main = new sound("Material/Sound/Music/S_main.mp3");
+
+ 	music.loop();
+ 	music.volume = 0.25;
+ 	music.play();
+ 
+ 	S_Rick_spawn.play();
+
+
 	//Añadimos los atajos de teclado.
 	var keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
     keyA.onDown.add(atacarclick, this);
@@ -113,6 +217,7 @@ function create() //Función create: inicia el juego.
     keyR.onDown.add(ruidoclick, this);
     var keySPACEBAR = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     keySPACEBAR.onDown.add(conti, this);
+
 
 	//Creamos los manejadores de eventos.
 	document.getElementById("atacar").addEventListener("click", atacarclick);
@@ -131,6 +236,7 @@ function update() //Función update: actualiza el juego.
 		con = false;
 		p.getJugadores()[0].getPersonaje().getSprite().destroy(); //Eliminamos el sprite.
 		document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Game Over! ¡Hora de cambiar de dimensión!";
+		S_lose.play();
 		gameReset();
 	} 
 	else
@@ -139,6 +245,7 @@ function update() //Función update: actualiza el juego.
 	 	{
 	 		con = false;
 	 		document.getElementById("Consoletext").innerHTML = "¡Has ganado! ¡Wubba Dubba lub lub!";
+	 		S_win.play();
 	 		gameReset();
 	 	}
 	 	else
@@ -174,6 +281,7 @@ function update() //Función update: actualiza el juego.
 
 						if (!moveonce) //Si no se han movido aún.
 						{
+							S_IA_RoundStart.play();
 							moverEnemigos(); //Movemos a los enemigos.
 							moveonce = true;
 						}
@@ -185,12 +293,13 @@ function update() //Función update: actualiza el juego.
 							if (count >= 15) //Si hay 15 o más enemigos en juego, máximo alcanzable, se vuelven a activar.
 							{
 								document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Oh, oh! ¡Demasiados Meeseeks! ¡Vuelven a activar su turno muy mosqueados!";
+								S_IA_furia.play();
 								moverEnemigos(); //Movemos a los enemigos.
 								atacarEnemigo(); //Los enemigos atacan.
 							}
 							else
 							{
-								if (getRandom(0, 1) == 0) //Hay un 50% de que aparezca un enemigo.
+								if (getRandom(0, 3) != 0) //Hay un 75% de que aparezca un enemigo.
 								{
 									spawnEnemigo();
 								}
@@ -224,6 +333,7 @@ function update() //Función update: actualiza el juego.
 
 //////////////////////////////////////// Eventos /////////////////////////////////////////
 
+
 function atacarclick() //Función llamada al pulsar el botón "Atacar".
 {
 	if(!move && !moving && started) //Si no se está reproduciendo la animación de mover.
@@ -238,6 +348,8 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 					p.getEnemigos()[i].setSalud(p.getEnemigos()[i].getSalud() - tirada); //Disminuimos la salud del enemigo en la tirada realizada.
 
 					document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Atacas! Resultado del ataque: <br /> Has lanzado " + p.getJugadores()[0].getPersonaje().getDados() + " dados de ataque, de los cuales han acertado " + tirada + ".";
+
+					S_punch.play();
 
 					if(p.getEnemigos()[i].getSalud() <= 0) //Si el enemigo pierde toda su salud.
 					{
@@ -257,6 +369,7 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 					document.getElementById("Consoletext").innerHTML += "<br /><br /> Se ha generado un poco de ruido en la casilla.";
 
 					p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+					i = p.getEnemigos().length; //Salimos del bucle.
 				}
 			}
 		}
@@ -307,6 +420,8 @@ function ruidoclick() //Función llamada al pulsar el botón "Hacer Ruido".
 		c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].setRuido(c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].getRuido() + 5); //Aumentamos el ruido de la casilla.
 	 	document.getElementById("Consoletext").innerHTML += "<br /><br /> Se ha generado mucho ruido en la casilla.";
 
+	 	S_ruido.play();
+
 	 	p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
 	}
 }
@@ -318,16 +433,23 @@ function conti() //Función llamada al pulsar el botón "Continuar".
 	{
 		if(turno == 1) //Turno inicial.
 		{
-			document.getElementById("Consoletext").innerHTML = "¡Comienza la partida!";
-		}
-		else //Otro turno.
-		{
-			document.getElementById("Consoletext").innerHTML = "Turno de los jugadores:";
-		}
+   			document.getElementById("Consoletext").innerHTML = "¡Comienza la partida!";
+  		}
+  		else //Otro turno.
+  		{
+   			esturno = (p.getJugadores()[0].getAccionesDisp() > 0);
 
-		con = true;
-		started = true; //Fijamos el booleano a true al empezar la partida.
-	}
+   			if(esturno)
+   			{
+    			S_Rick_turno.play();
+   			}
+
+   			document.getElementById("Consoletext").innerHTML = "Turno de los jugadores:";
+  		}
+
+  		con = true;
+  		started = true; //Fijamos el booleano a true al empezar la partida.
+ 	}
 }
 
 
@@ -717,6 +839,7 @@ function evadir() //Función de evadir enemigos al moverse.
 				p.getJugadores()[0].getPersonaje().setSalud(p.getJugadores()[0].getPersonaje().getSalud() - 1); //Disminuimos la salud del jugador.
 
 				document.getElementById("Consoletext").innerHTML += "<br /><br /> Has fallado la evasión, recibes una herida. Tu salud resultante es: " +  p.getJugadores()[0].getPersonaje().getSalud() + ".";
+				S_Rick_daño.play();
 			}
 			else
 			{
@@ -731,25 +854,33 @@ function atacarEnemigo() //Función de ataque de un enemigo.
 {
 	if (!movinge) //No se está moviendo.
 	{
-		for(var i = 0; i < p.getEnemigos().length; i++) //Recorremos el array de enemigos.
-		{
-			if(p.getEnemigos()[i] != undefined && (p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) && (p.getEnemigos()[i].getCasilla()[1] == p.getJugadores()[0].getCasilla()[1])) //Si la casilla del enemigo es la misma que la del jugador.
-			{
-				var tiradaE = Dados(p.getEnemigos()[i].getDados(), 6); //Tiramos los dados enemigos (n dados del personaje, 50% acierto).
-				var tiradaJ = Dados(p.getJugadores()[0].getPersonaje().getDados(), 1); //Tiramos los dados del jugador.
+  		for(var i = 0; i < p.getEnemigos().length; i++) //Recorremos el array de enemigos.
+  		{
+   			if(p.getEnemigos()[i] != undefined && (p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) && (p.getEnemigos()[i].getCasilla()[1] == p.getJugadores()[0].getCasilla()[1])) //Si la casilla del enemigo es la misma que la del jugador.
+   			{
+    			var tiradaE = Dados(p.getEnemigos()[i].getDados(), 6); //Tiramos los dados enemigos (n dados del personaje, 50% acierto).
+    			var tiradaJ = Dados(p.getJugadores()[0].getPersonaje().getDados(), 1); //Tiramos los dados del jugador.
 
-				p.getJugadores()[0].getPersonaje().setSalud(p.getJugadores()[0].getPersonaje().getSalud() - Math.max(tiradaE - tiradaJ, 0)); //Disminuimos la salud del jugador, contrarrestando la tirada enemiga con la defensa.
+    			var saludAnt = p.getJugadores()[0].getPersonaje().getSalud();
 
-				document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Te atacan! Resultado de la defensa: <br /> Has lanzado " + p.getJugadores()[0].getPersonaje().getDados() + " dados de defensa, de los cuales han acertado " + tiradaJ
-				+ ". <br /> El enemigo ha lanzado " + p.getEnemigos()[i].getDados() + " dados de ataque, de los cuales han acertado " + tiradaE + ". <br /> Salud resultante: " + p.getJugadores()[0].getPersonaje().getSalud() + ".";
-			}
-		}
-	}
+    			p.getJugadores()[0].getPersonaje().setSalud(p.getJugadores()[0].getPersonaje().getSalud() - Math.max(tiradaE - tiradaJ, 0)); //Disminuimos la salud del jugador, contrarrestando la tirada enemiga con la defensa.
+
+    			if(p.getJugadores()[0].getPersonaje().getSalud() < saludAnt)
+    			{
+     				S_Rick_daño.play();
+    			}
+
+    			document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Te atacan! Resultado de la defensa: <br /> Has lanzado " + p.getJugadores()[0].getPersonaje().getDados() + " dados de defensa, de los cuales han acertado " + tiradaJ
+    			+ ". <br /> El enemigo ha lanzado " + p.getEnemigos()[i].getDados() + " dados de ataque, de los cuales han acertado " + tiradaE + ". <br /> Salud resultante: " + p.getJugadores()[0].getPersonaje().getSalud() + ".";
+   			}
+  		}
+ 	}
 }
 
 
 function moverEnemigos() //Función que mueve los enemigos del tablero.
 {
+	var t; //Variable de la casilla buscada.
 	var e = p.getEnemigos(); //Guardamos los enemigos de la partida.
 	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
 
@@ -764,17 +895,16 @@ function moverEnemigos() //Función que mueve los enemigos del tablero.
 			   
 			   	//Ordenamos el array en función del ruido, de mayor a menor, utilizando el método de la burbuja.
 			   	var res;
-			   	var t;
 			   	do 
 			    {
 			        res = false;
-			        for (var j = 0; j < adyacentes .length - 1; j++) 
+			        for (var j = 0; j < adyacentes.length - 1; j++) 
 			        {
 			            if (adyacentes[j].getRuido() < adyacentes[j+1].getRuido()) 
 			            {
-			                var t = adyacentes[j];
-			                adyacentes[j] = adyacentes [j+1];
-			                adyacentes[j+1] = t;
+			                var tt = adyacentes[j];
+			                adyacentes[j] = adyacentes[j+1];
+			                adyacentes[j+1] = tt;
 			                res = true;
 			            }
 			        }
@@ -785,7 +915,7 @@ function moverEnemigos() //Función que mueve los enemigos del tablero.
 				{
 				    t = adyacentes[0];
 				}
-			   	else //No hay ruido en la casilla, movemos a una casilla aleatoria.
+			   	else if (adyacentes[0].getRuido() == 0) //No hay ruido en la casilla, movemos a una casilla aleatoria.
 				{
 				    do 
 				    {
@@ -793,22 +923,26 @@ function moverEnemigos() //Función que mueve los enemigos del tablero.
 				    } 
 				    while (t == c[4][7]); //Mientras la casilla no sea la meta.
 				}
+			}
+			else if (e[i] != undefined && (c[e[i].getCasilla()[0]][e[i].getCasilla()[1]].getPersonajes() > 0)) //Hay personajes en la casilla del enemigo (no se mueve).
+			{
+				t = c[e[i].getCasilla()[0]][e[i].getCasilla()[1]];
+			}
 
-			    for (var u = 0; u < 7; u++)
-			    {
-			    	for(var v = 0; v < 9; v++)
+			for (var u = 0; u < 7; u++)
+			{
+			    for(var v = 0; v < 9; v++)
+			     {
+			      	if(c[u][v] instanceof Casilla && c[u][v] == t && e[i] instanceof Enemigo) //Si la posición del tablero es una casilla, y es la misma que la buscada.
+			      	{
+			      		movinge = true;
+					    e[i].setCasilla(u, v); //Movemos a la casilla [i,j].
+					    e[i].setMoveset(Math.round(c[u][v].getPos()[0] - 28.5 + getRandom(-35, 35)), Math.round(c[u][v].getPos()[1] - 36.25 + getRandom(-35, 35))); //Actualizamos las coordenadas a las que se debe mover el sprite, multiplicando por un pequeño offset aleatorio.
+			      	}
+
+			      	if(c[u][v] instanceof Casilla)
 			     	{
-			      		if(c[u][v] instanceof Casilla && c[u][v] == t) //Si la posición del tablero es una casilla, y es la misma que la buscada.
-			      		{
-			      			movinge = true;
-					        e[i].setCasilla(u, v); //Movemos a la casilla [i,j].
-					        e[i].setMoveset(Math.round(c[u][v].getPos()[0] - 28.5 + getRandom(-35, 35)), Math.round(c[u][v].getPos()[1] - 36.25 + getRandom(-35, 35))); //Actualizamos las coordenadas a las que se debe mover el sprite, multiplicando por un pequeño offset aleatorio.
-			      		}
-
-			      		if(c[u][v] instanceof Casilla)
-			      		{
-			  	    		c[u][v].setRuido(0); //Reseteamos el ruido de la ronda.
-			      		}
+			  	   		c[u][v].setRuido(0); //Reseteamos el ruido de la ronda.
 			     	}
 			    }
 			}
@@ -886,6 +1020,17 @@ function spawnEnemigo() //Función que hace aparecer enemigos nuevos.
 		var u; var v; //Índices de la casilla de los enemigos.
 		var t = getRandom(1, 2); //Tipo del enemigo (Normal o MiniBoss).
 		var index = p.getEnemigos().length; //Índice a partir del cual añadir los enemigos al array.
+
+		switch (getRandom(0, 1))
+		{
+			case 0:
+		    S_Meeseek_spawn1.play();
+		    break;
+
+		    case 1:
+		    S_Meeseek_spawn2.play();
+		    break;
+		}
 	 	
 	 	//Añadimos a los enemigos aleatoriamente.
 		switch (getRandom(0, 3))
@@ -1030,6 +1175,11 @@ function Jugador() //Objeto Jugador.
 	this.setAccionesDisp = function(a)
 	{
 		accionesDisp = a;
+
+		if (accionesDisp < 0)
+		{
+			accionesDisp = 0;
+		}
 	}
 
 	this.setCasilla = function(i, j)
@@ -1358,5 +1508,26 @@ function Casilla(inter, x, y, ancho, alto) //Objeto Casilla.
 	{
 		ruido = ru;
 	}
+}
+
+
+function sound(src) //Objeto auxiliar de sonido.
+{
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }
+    this.loop = function()
+    {
+    	this.sound.setAttribute("loop", "loop");
+    }
 }
 
