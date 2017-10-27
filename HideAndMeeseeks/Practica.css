@@ -6,30 +6,42 @@ Grado en Diseño y Desarrollo de Videojuegos.
 
 
 body 
-{ 
-    background-image: url("Material/Img/Otros/Background.png");
+{
+    background-image: url("Material/Img/Otros/Background2.png");
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-position: center;
     background-size: cover;
 }
 
-#Barra
+.Barra 
 {
-	position: fixed;
-	left:0; 
-	right:0;
-	bottom: 0;
-	width: 50%;
-	margin-right: auto;
-    margin-left: auto;
-    text-align:center;
-    background-color: #ddd;
-  	border: 1px solid #000;
+   -moz-box-shadow:inset 0px 1px 5px 2px #b54b3a;
+    -webkit-box-shadow:inset 0px 1px 5px 2px #b54b3a;
+    box-shadow:inset 0px 1px 5px 2px #b54b3a;
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #a73f2d), color-stop(1, #b34332));
+    background:-moz-linear-gradient(top, #a73f2d 5%, #b34332 100%);
+    background:-webkit-linear-gradient(top, #a73f2d 5%, #b34332 100%);
+    background:-o-linear-gradient(top, #a73f2d 5%, #b34332 100%);
+    background:-ms-linear-gradient(top, #a73f2d 5%, #b34332 100%);
+    background:linear-gradient(to bottom, #a73f2d 5%, #b34332 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#a73f2d', endColorstr='#b34332',GradientType=0);
+    background-color:#a73f2d;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    display:inline-block;
+    color:#ffffff;
+    font-family: Arial;
+    font-size:25px;
+    font-weight:bold;
+    padding:5px 13px;
+    text-decoration:none;
+    text-shadow:1px 1px 8px #7a2a1d;
 }
 
-
-.Mensajes {
+.Mensajes 
+{
     -moz-box-shadow:inset 0px 1px 5px 2px #ffffff;
     -webkit-box-shadow:inset 0px 1px 5px 2px #ffffff;
     box-shadow:inset 0px 1px 5px 2px #ffffff;
@@ -45,23 +57,21 @@ body
     -webkit-border-radius:5px;
     border-radius:5px;
     display:inline-block;
-    
     color:#666666;
-    font-family:Arial;
+    font-family: Arial;
     font-size:14px;
     padding:5px 13px;
     text-decoration:none;
     text-shadow:1px 1px 8px #ffffff;
-
-     height: 600px;
-     width: 300px;
-
+    height: 600px;
+    width: 250px;
 }
 
-.Notifications {
-     float: left;
-     position: fixed;
-     -moz-box-shadow:inset 0px 1px 5px 2px #b54b3a;
+.Notificaciones 
+{
+    float: left;
+    position: fixed;
+    -moz-box-shadow:inset 0px 1px 5px 2px #b54b3a;
     -webkit-box-shadow:inset 0px 1px 5px 2px #b54b3a;
     box-shadow:inset 0px 1px 5px 2px #b54b3a;
     background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #a73f2d), color-stop(1, #b34332));
@@ -77,44 +87,16 @@ body
     border-radius:5px;
     display:inline-block;
     color:#ffffff;
-    font-family:Arial;
+    font-family: Arial;
     font-size:25px;
     font-weight:bold;
     padding:5px 13px;
     text-decoration:none;
     text-shadow:1px 1px 8px #7a2a1d;
 }
-.Barra {
-  -moz-box-shadow:inset 0px 1px 5px 2px #b54b3a;
-    -webkit-box-shadow:inset 0px 1px 5px 2px #b54b3a;
-    box-shadow:inset 0px 1px 5px 2px #b54b3a;
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #a73f2d), color-stop(1, #b34332));
-    background:-moz-linear-gradient(top, #a73f2d 5%, #b34332 100%);
-    background:-webkit-linear-gradient(top, #a73f2d 5%, #b34332 100%);
-    background:-o-linear-gradient(top, #a73f2d 5%, #b34332 100%);
-    background:-ms-linear-gradient(top, #a73f2d 5%, #b34332 100%);
-    background:linear-gradient(to bottom, #a73f2d 5%, #b34332 100%);
-    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#a73f2d', endColorstr='#b34332',GradientType=0);
-    background-color:#a73f2d;
-    -moz-border-radius:5px;
-    -webkit-border-radius:5px;
-    border-radius:5px;
-    display:inline-block;
-    color:#ffffff;
-    font-family:Arial;
-    font-size:25px;
-    font-weight:bold;
-    padding:5px 13px;
-    text-decoration:none;
-    text-shadow:1px 1px 8px #7a2a1d;
 
-
-}
-
-
-
-
-.BotonGenerico {
+.BotonGenerico 
+{
     -moz-box-shadow:inset 0px 1px 5px 2px #cf866c;
     -webkit-box-shadow:inset 0px 1px 5px 2px #cf866c;
     box-shadow:inset 0px 1px 5px 2px #cf866c;
@@ -125,21 +107,56 @@ body
     display:inline-block;
     cursor:pointer;
     color:#ffffff;
-    font-family:Arial;
+    font-family: Arial;
     font-size:25px;
     font-weight:bold;
     padding:5px 13px;
     text-decoration:none;
     text-shadow:1px 1px 8px #854629;
 }
-.BotonGenerico:hover {
+
+.BotonGenerico:hover 
+{
     background-color:transparent;
 }
-.BotonGenerico:active {
+
+.BotonGenerico:active 
+{
     position:relative;
     top:1px;
 }
 
+#Borderframe
+{
+    width: 1020px; 
+    height: 770px; 
+    margin: 0 auto; 
+    background-color:#a73f2d;
+}
 
+#phaser
+{
+    position: relative;
+    top:10;
+    left:7;
+}
 
+#Barra
+{
+    position: fixed;
+    left:0; 
+    right:0;
+    bottom: 0;
+    width: 50%;
+    margin-right: auto;
+    margin-left: auto;
+    text-align:center;
+    background-color: #ddd;
+    border: 1px solid #000;
+}
+
+#continuar
+{
+    background-color: green;
+}
 

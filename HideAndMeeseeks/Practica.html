@@ -16,7 +16,7 @@ Grado en Diseño y Desarrollo de Videojuegos.
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
 		<!-- Título del documento. -->
-		<title> Rick and Morty: Hide and Meeseek </title>
+		<title> Rick and Morty - Hide and Meeseek </title>
 
 		<!-- Estilo. -->
 		<link rel="stylesheet" type="text/css"  href="Practica.css" charset="ISO-8859-1"/>
@@ -29,32 +29,22 @@ Grado en Diseño y Desarrollo de Videojuegos.
 	</head>
 	
 	<body > <!-- Cuerpo del archivo. -->
-			<div id = "Notifications" class = "Notifications">
 
-				<br>NOTIFICACIONES</br>
-				
-				<div id = "Mensajes" class = "Mensajes">
-					<br> - Rick ha usado Atacar! </br> 
-					<br> - Dados: 2 </br>
+			<div id=Notificaciones class=Notificaciones>
+				<br> Notificaciones </br>
+				<div id=Mensajes class=Mensajes>
+				<br> <span id=Consoletext> </span> </br> 
 				</div>
-
-
 			</div>
 			
-			<div id = "phaser" class = "Game">
-
-			</div>
-
-
+			<div id=Borderframe>
+				<div id=phaser class=Game> </div>  
 			</div>
 
 			<div id=Barra class = "Barra">
-				<h3 id=Acciones> Acciones </h3>
+				<h3 id=Acciones> (Turno) - Acciones </h3>
  				<button id=atacar class="BotonGenerico">
  					Atacar (A)
- 				</button>
- 				<button id=buscar class="BotonGenerico">
- 					Buscar (B)
  				</button>
  				 <button id=ruido class="BotonGenerico">
  					Hacer ruido (R)
@@ -62,11 +52,12 @@ Grado en Diseño y Desarrollo de Videojuegos.
  				 <button id=mover class="BotonGenerico">
  					Mover (M)
  				</button>
- 				<button id=objeto class="BotonGenerico">
- 					Objeto (O)
+ 				<button id=continuar class="BotonGenerico">
+ 					Continuar (SPACE)
  				</button>
 			</div>
 	
 	</body>
 
 </hmtl>
+
