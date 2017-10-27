@@ -16,7 +16,7 @@ body
 
 .Barra 
 {
-   -moz-box-shadow:inset 0px 1px 5px 2px #b54b3a;
+    -moz-box-shadow:inset 0px 1px 5px 2px #b54b3a;
     -webkit-box-shadow:inset 0px 1px 5px 2px #b54b3a;
     box-shadow:inset 0px 1px 5px 2px #b54b3a;
     background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #a73f2d), color-stop(1, #b34332));
@@ -24,7 +24,7 @@ body
     background:-webkit-linear-gradient(top, #a73f2d 5%, #b34332 100%);
     background:-o-linear-gradient(top, #a73f2d 5%, #b34332 100%);
     background:-ms-linear-gradient(top, #a73f2d 5%, #b34332 100%);
-    background:linear-gradient(to bottom, #a73f2d 5%, #b34332 100%);
+    background:linear-gradient(to bottom, #752a2a 50%, #a73f2d 100%);
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#a73f2d', endColorstr='#b34332',GradientType=0);
     background-color:#a73f2d;
     -moz-border-radius:5px;
@@ -32,7 +32,7 @@ body
     border-radius:5px;
     display:inline-block;
     color:#ffffff;
-    font-family: Arial;
+    font-family: Comic Sans MS;
     font-size:25px;
     font-weight:bold;
     padding:5px 13px;
@@ -58,7 +58,7 @@ body
     border-radius:5px;
     display:inline-block;
     color:#666666;
-    font-family: Arial;
+    font-family: Comic Sans MS;
     font-size:14px;
     padding:5px 13px;
     text-decoration:none;
@@ -79,7 +79,7 @@ body
     background:-webkit-linear-gradient(top, #a73f2d 5%, #b34332 100%);
     background:-o-linear-gradient(top, #a73f2d 5%, #b34332 100%);
     background:-ms-linear-gradient(top, #a73f2d 5%, #b34332 100%);
-    background:linear-gradient(to bottom, #a73f2d 5%, #b34332 100%);
+    background:linear-gradient(to bottom, #752a2a 50%, #a73f2d 100%);
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#a73f2d', endColorstr='#b34332',GradientType=0);
     background-color:#a73f2d;
     -moz-border-radius:5px;
@@ -87,7 +87,7 @@ body
     border-radius:5px;
     display:inline-block;
     color:#ffffff;
-    font-family: Arial;
+    font-family: Comic Sans MS;
     font-size:25px;
     font-weight:bold;
     padding:5px 13px;
@@ -107,7 +107,7 @@ body
     display:inline-block;
     cursor:pointer;
     color:#ffffff;
-    font-family: Arial;
+    font-family: Comic Sans MS;
     font-size:25px;
     font-weight:bold;
     padding:5px 13px;
@@ -126,12 +126,39 @@ body
     top:1px;
 }
 
-#Borderframe
+#Acciones
 {
+    position: relative;
+    top: -15;
+}
+
+
+#Misc
+{
+    position: absolute;
+    color:#ffffff;
+    font-family: Comic Sans MS;
+    font-weight:bold;
+    padding:5px 13px;
+    text-decoration:none;
+    text-shadow:1px 1px 8px #7a2a1d;
+}
+
+#logo
+{
+    width: 1400px;
+    height: 811px;
+    display: block;
+    margin: 0 auto;
+}
+
+#Borderframe
+{ 
     width: 1020px; 
     height: 770px; 
     margin: 0 auto; 
-    background-color:#a73f2d;
+    background-color: rgba(167, 63, 45, 1);
+    background:linear-gradient(to bottom, #752a2a 50%, #a73f2d 100%);
 }
 
 #phaser
