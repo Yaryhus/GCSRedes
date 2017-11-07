@@ -1,4 +1,4 @@
-![alt text](https://github.com/Yaryhus/Rick-And-Morty-Hide-and-Meeseek/blob/master/HideAndMeeseeks/Material/Img/Otros/Logo.png "Rick and Morty: Hide and Meeseek")
+![alt text](https://github.com/Yaryhus/Rick-And-Morty-Hide-and-Meeseek/blob/master/HideAndMeeseeks/src/main/resources/static/HideAndMeeseeks/Material/Img/Otros/Logo.png "Rick and Morty: Hide and Meeseek")
 
 ---
 
