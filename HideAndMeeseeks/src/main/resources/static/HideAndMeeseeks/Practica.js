@@ -45,6 +45,20 @@ var movey; //Variable auxiliar para almacenar la y destino al moverse.
 var p; //Instancia de la partida.
 
 
+///////////////////////////////////////// Red ///////////////////////////////////////////
+
+/*
+
+ $.ajax({
+	 method:"POST",
+	 url:"http://localhost:8080/jugadores"
+	 data : JSON.stringify({name:"Rick",puntos:0}),
+	 headers:{ "Content-type":"application/json"}
+ });
+
+ */
+
+
 ///////////////////////////////////////// Main ///////////////////////////////////////////
 
 
@@ -246,6 +260,7 @@ function update() //Función update: actualiza el juego.
 	 		con = false;
 	 		document.getElementById("Consoletext").innerHTML = "¡Has ganado! ¡Wubba Dubba lub lub!";
 	 		S_win.play();
+                        p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 100); //Puntos al ganar.
 	 		gameReset();
 	 	}
 	 	else
@@ -357,6 +372,18 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 						p.getEnemigos()[i] = undefined; //Eliminamos el enemigo.
 						i = p.getEnemigos().length; //Salimos del bucle, para no seguir atacando al resto de enemigos.
 						document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Enemigo eliminado!";
+                                                if(p.getEnemigos()[i].getTipo() == 1) //Meeseek normal.
+                                                {
+                                                    p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 5); 
+                                                }
+                                                else if(p.getEnemigos()[i].getTipo() == 2) //Meeseek especial.
+                                                {
+                                                    p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 10); 
+                                                }
+                                                else if(p.getEnemigos()[i].getTipo() == 3) //Boss.
+                                                {
+                                                    p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 20); 
+                                                }
 					}
 					else
 					{
@@ -1154,6 +1181,7 @@ function Jugador() //Objeto Jugador.
 	var personaje; //Personaje del jugador.
 	var accionesDisp = 4; //Acciones disponibles del jugador.
 	var casilla = [0,4]; //Índice i y j de la casilla en que está.
+    var puntos = 0; //Puntos del jugador.
 
 	//Getters.	
 	this.getAccionesDisp = function()
@@ -1170,6 +1198,12 @@ function Jugador() //Objeto Jugador.
 	{
 		return personaje;
 	} 
+        
+        this.getPuntos = function()
+        {
+                return puntos;
+        }
+
 
 	//Setters.
 	this.setAccionesDisp = function(a)
@@ -1191,6 +1225,11 @@ function Jugador() //Objeto Jugador.
 	{
 		personaje = p;
 	} 
+
+	this.setPuntos = function(p)
+	{
+		puntos = p;
+	}
 }
 
 
