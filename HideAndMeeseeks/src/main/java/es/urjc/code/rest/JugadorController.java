@@ -13,25 +13,12 @@ public class JugadorController {
 	
        public  List<Jugador> Jugadores = new ArrayList<>();
         
-     /*   
-        public JugadorController()
-        {
-            Jugadores.add(new Jugador("Rick",100));
-            Jugadores.add(new Jugador("Morty",10));
-            Jugadores.add(new Jugador("Summer",20));
-            Jugadores.add(new Jugador("Idiocia",1000));
-        }
-        */
+     
         //Pedir jugador
 	@RequestMapping(value = "/jugadores", method = RequestMethod.GET)
 	public List<Jugador> jugadores() 
         {
-            /*
-            Jugadores.add(new Jugador("Rick",100));
-            Jugadores.add(new Jugador("Morty",10));
-            Jugadores.add(new Jugador("Summer",20));
-            Jugadores.add(new Jugador("Idiocia",1000));
-*/
+
 		return Jugadores;
 	}
         
@@ -41,14 +28,39 @@ public class JugadorController {
                 Jugadores.add(jugador);
                 return new ResponseEntity<>(true, HttpStatus.CREATED);
 	}
-        //Actualizar valor 
-        @RequestMapping(value = "/setPuntuacion", method = RequestMethod.POST)
-	public ResponseEntity<Boolean> setPuntuacion(@RequestBody Jugador jugador) {
+        
+                //Get Puntuacion
+        	@RequestMapping(value = "/getPuntuacion/{jugador}", method = RequestMethod.GET)
+	public int getPuntuacion(@PathVariable String jugador) 
+        {
+            for(int i=0; i<Jugadores.size();i++)
+                {
+	      if(Jugadores.get(i).getName().equals(jugador))
+                    return Jugadores.get(i).getPuntos();
+                }
+           return -1;
+	}
+                //Añadir Puntuacion
+        @RequestMapping(value = "/setPuntuacion/{jugador}", method = RequestMethod.POST)
+	public ResponseEntity<Boolean> addPuntuacion(@RequestBody int puntos, @PathVariable Jugador jugador) {
                 for(int i=0; i<Jugadores.size();i++)
                 {
                     if(Jugadores.get(i).getName().equals(jugador.getName()))
                     {
-                        Jugadores.get(i).setPuntos(jugador.getPuntos());
+                        Jugadores.get(i).setPuntos(Jugadores.get(i).getPuntos() + puntos);
+                    }
+                }
+                return new ResponseEntity<>(true, HttpStatus.CREATED);
+	}
+        
+        //Sustituir puntuacion 
+        @RequestMapping(value = "/setPuntuacion/{jugador}", method = RequestMethod.PUT)
+	public ResponseEntity<Boolean> setPuntuacion(@RequestBody int puntos, @PathVariable Jugador jugador) {
+                for(int i=0; i<Jugadores.size();i++)
+                {
+                    if(Jugadores.get(i).getName().equals(jugador.getName()))
+                    {
+                        Jugadores.get(i).setPuntos(puntos);
                     }
                 }
                 return new ResponseEntity<>(true, HttpStatus.CREATED);
