@@ -47,16 +47,38 @@ var p; //Instancia de la partida.
 
 ///////////////////////////////////////// Red ///////////////////////////////////////////
 
-/*
 
+function putPuntos(name, puntosSus)
+{
  $.ajax({
-	 method:"POST",
-	 url:"http://localhost:8080/jugadores"
-	 data : JSON.stringify({name:"Rick",puntos:0}),
+	 method:"PUT",
+	 url:"http://localhost:8080/setPuntuacion/" + name,
+	 data : JSON.stringify({puntos:puntosSus}),
 	 headers:{ "Content-type":"application/json"}
  });
+}
 
- */
+function postPuntos( name,  puntosSum)
+{
+ $.ajax({
+	 method:"POST",
+	 url:"http://localhost:8080/addPuntuacion/" + name,
+	 data : JSON.stringify({puntos:puntosSum}),
+	 headers:{ "Content-type":"application/json"}
+ });
+}
+
+function getPuntos( name)
+{
+ $.ajax({
+	 method:"GET",
+	 url:"http://localhost:8080/getPuntuacion/" + name,
+	 headers:{ "Content-type":"application/json"}
+ }).done(function(data){
+    p.getJugadores()[0].setPuntos(data);
+});
+}
+ 
 
 
 ///////////////////////////////////////// Main ///////////////////////////////////////////
@@ -77,6 +99,8 @@ $(document).ready(function() //Función inicial.
 	movex = 0;
 	movey = 0;
 
+        
+        
 	//Ocultamos los elementos adecuados.
 	$("#logo").show();
 	$("#Misc").show();
@@ -220,7 +244,26 @@ function create() //Función create: inicia el juego.
  	music.play();
  
  	S_Rick_spawn.play();
+        
+        //Debug
 
+        $.ajax({
+
+	 method:"POST",
+	 url:"http://localhost:8080/jugadores",
+	 data : JSON.stringify({name:"Rick",puntos:0}),
+	 headers:{ "Content-type":"application/json"}
+        });
+
+        console.log(getPuntos("Rick"));
+        postPuntos("Rick", 50);
+        console.log(getPuntos("Rick"));
+        postPuntos("Rick", 50);
+        console.log(getPuntos("Rick"));
+        putPuntos("Rick", 5);
+        console.log(getPuntos("Rick")); 
+
+        //FinDebug
 
 	//Añadimos los atajos de teclado.
 	var keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
