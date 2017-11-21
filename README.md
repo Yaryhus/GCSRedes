@@ -9,7 +9,9 @@
   #### 3. Reglas del juego
   #### 4. Referencias
   #### 5. Copyright disclaimer 
-  #### 6. Diagrama de navegación <br>
+  #### 6. Diagrama de navegación 
+  #### 7. Diagrama de clases
+  #### 8. Instrucciones de ejecución <br>
 
 ---
 
@@ -60,8 +62,6 @@ El juego soporta de 2 a 4 jugadores de forma online, de manera que se irán suce
   - *Aparición:* Una vez los enemigos han realizado sus acciones, aparecen más enemigos en los puntos designados del escenario. En función de cómo de avanzada vaya la partida, aparecerá un número mayor o menor de ellos. Si durante la aparición alcanza el número máximo de enemigos posibles en el tablero, de forma que no puedan aparecer más porque no "quepan", todos los enemigos actualmente en juego se "activan" y vuelven a realizar las acciones de movimiento y ataque/defensa. Tras esto, ya se hayan "activado" o no, se reinicia la ronda, volviendo a la fase de los jugadores.
 
 Esta sucesión se producirá indefinidamente, hasta que se obtenga la victoria (se cumple el objetivo) o la derrota (muerte de algún jugador), finalizando así la partida. <br><br>
-
-En cuanto a la parte online del juego, éste dispondrá de una consola de chat para introducir comandos a la máquina, así como comunicarse de forma asíncrona con otros jugadores.
 
 ---
 
@@ -127,5 +127,21 @@ If you enjoy this product, please support the creators of the show and their res
 **Pantalla 10** - El jugador ha perdido recibiendo 3 heridas, el juego se resetea. 
 
 ![alt text](https://github.com/Yaryhus/Rick-And-Morty-Hide-and-Meeseek/blob/master/DiagramaNav/IMG%20(10).PNG "Rick and Morty: Hide and Meeseek")
+
+---
+
+## 7. Diagrama de clases
+
+A continuación se presenta el diagrama de clases correspondiente con la parte de Java y API Rest:
+![alt text](https://github.com/Yaryhus/Rick-And-Morty-Hide-and-Meeseek/blob/master/DiagramaNav/Clases.PNG "Rick and Morty: Hide and Meeseek")
+
+---
+
+## 8. Instrucciones de ejecución
+
+Durante el desarrollo de la fase, se ha utilizado el IDE gratuito NetBeans 8.2, basado en Java (https://netbeans.org/downloads/).
+Se recomienda su uso para la ejecución/compilación del proyecto, aunque otro IDE como Eclipse (que soporte Spring y Maven mediante auxiliares como Spring Tool Suite) permitirá su ejecución.
+
+Para ejecutar el juego, primero deberemos iniciar el servidor desde el IDE que corresponda (botón de play en NetBeans). Una vez iniciado, insertaremos en el navegador la siguiente URL: "localhost:8080/HideAndMeeseeks/Practica.html", y ya podremos jugar mediante el servidor.
 
 ---
