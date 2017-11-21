@@ -48,37 +48,62 @@ var p; //Instancia de la partida.
 ///////////////////////////////////////// Red ///////////////////////////////////////////
 
 
-function putPuntos(name, puntosSus)
+function putPuntos(name,puntosSus) //Función que hace un PUT (sustituye) al servidor de los puntos del jugador seleccionado.
 {
- $.ajax({
-	 method:"PUT",
-	 url:"http://localhost:8080/setPuntuacion/" + name,
-	 data : JSON.stringify({puntos:puntosSus}),
-	 headers:{ "Content-type":"application/json"}
- });
+	$.ajax({
+ 		method:"PUT",
+		url:"http://localhost:8080/setPuntuacion/" + name,
+		data : JSON.stringify(puntosSus),
+		headers:{ "Content-type":"application/json"}
+	});
 }
 
-function postPuntos( name,  puntosSum)
+function postPuntos(name,puntosSum) //Función que hace un POST (añade) al servidor de los puntos del jugador seleccionado.
 {
- $.ajax({
-	 method:"POST",
-	 url:"http://localhost:8080/addPuntuacion/" + name,
-	 data : JSON.stringify({puntos:puntosSum}),
-	 headers:{ "Content-type":"application/json"}
- });
+	$.ajax({
+		method:"POST",
+		url:"http://localhost:8080/setPuntuacion/" + name,
+		data : JSON.stringify(puntosSum),
+		headers:{ "Content-type":"application/json"}
+	});
 }
 
-function getPuntos( name)
+function getPuntos(name) //Función que hace un GET al servidor de los puntos del jugador seleccionado.
 {
- $.ajax({
-	 method:"GET",
-	 url:"http://localhost:8080/getPuntuacion/" + name,
-	 headers:{ "Content-type":"application/json"}
- }).done(function(data){
-    p.getJugadores()[0].setPuntos(data);
-});
+	$.ajax({
+		method:"GET",
+		url:"http://localhost:8080/getPuntuacion/" + name,
+		headers:{ "Content-type":"application/json"}
+	}).done(function(data)
+	{
+	    var num = data;
+	    
+	    for (var i = 0; i < p.getJugadores().length; i++) //Recorremos el array de jugadores para seleccionar al jugador adecuado.
+	    {
+	        if(p.getJugadores()[i].getPersonaje().getID() == name) //Si es el jugador que queremos.
+	        {
+	            p.getJugadores()[i].setPuntos(num); //Fijamos los puntos.
+	            //console.log(p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos());
+	        }
+	    }
+
+	    document.getElementById("Consoletext2").innerHTML = "Jugador  -  Puntos" + "<br /><br />";
+		for (var i = 0; i < p.getJugadores().length; i++)
+		{
+			document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
+		}
+	});
 }
  
+function juga() //Función que inicializa los jugadores en el servidor.
+{
+    $.ajax({
+		method:"POST",
+		url:"http://localhost:8080/jugadores",
+		data : JSON.stringify({name:"Rick",puntos:0}),
+		headers:{ "Content-type":"application/json"}
+    });
+}
 
 
 ///////////////////////////////////////// Main ///////////////////////////////////////////
@@ -86,6 +111,9 @@ function getPuntos( name)
 
 $(document).ready(function() //Función inicial.
 { 
+	//Inicializamos los jugadores.
+    juga();
+
 	//Inicializamos las variables.
 	mute = false;
 	njug = 1;
@@ -98,14 +126,13 @@ $(document).ready(function() //Función inicial.
 	moving = false;
 	movex = 0;
 	movey = 0;
-
-        
         
 	//Ocultamos los elementos adecuados.
 	$("#logo").show();
 	$("#Misc").show();
 	$("#Borderframe").hide();
 	$("#Notificaciones").hide();
+	$("#Notificaciones2").hide();
 	$("#Barra").hide();
 })
 
@@ -121,6 +148,7 @@ $(window).keypress(function (e)  //Función que detecta si se pulsa espacio para
 	    $("#Misc").hide();
 	    $("#Borderframe").show();
 	    $("#Notificaciones").show();
+	    $("#Notificaciones2").show();
 	    $("#Barra").show();
 
 	    turno++;
@@ -221,8 +249,18 @@ function create() //Función create: inicia el juego.
 	document.getElementById("Consoletext").innerHTML += "¡Bienvenido a <em>Rick and Morty: Hide and Meeseek!</em> <br /><br /> Objetivo: llegar al helipuerto (Exit), sin palmarla por el camino." + 
 	" Para ello, dispones de diversas acciones: <br /><br /> - Atacar: lanzar los dados de tu personaje para atacar a un enemigo de tu misma casilla. <br /> - Mover: moverse a una casilla adyacente (si hay algún enemigo en tu casilla, tirarás un dado para evadirlo)." + 
 	" <br /> - Hacer ruido: hacer ruido en una casilla para atraer a los enemigos de casillas adyacentes. <br /><br /> ¡Mucha Suerte! <br /><br /><br /> ----------------------------- <br /><br /><br /> Pulse 'Continuar' para comenzar la partida.";
-	
 
+	document.getElementById("Consoletext2").innerHTML = "Jugador  -  Puntos" + "<br /><br />";
+	for (var i = 0; i < p.getJugadores().length; i++)
+	{
+		document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
+	}
+	
+    for (var i = 0; i < p.getJugadores().length; i++)
+    {
+        putPuntos(p.getJugadores()[i].getPersonaje().getID(), 0); //Fija a 0 los puntos en el servidor, por cada jugador.
+    }
+        
 	//Música y sonidos.
 	music = new sound("Material/Sound/Music/S_main.mp3");
 	S_Rick_spawn = new sound("Material/Sound/Rick/S_spawn.mp3");
@@ -245,26 +283,6 @@ function create() //Función create: inicia el juego.
  
  	S_Rick_spawn.play();
         
-        //Debug
-
-        $.ajax({
-
-	 method:"POST",
-	 url:"http://localhost:8080/jugadores",
-	 data : JSON.stringify({name:"Rick",puntos:0}),
-	 headers:{ "Content-type":"application/json"}
-        });
-
-        console.log(getPuntos("Rick"));
-        postPuntos("Rick", 50);
-        console.log(getPuntos("Rick"));
-        postPuntos("Rick", 50);
-        console.log(getPuntos("Rick"));
-        putPuntos("Rick", 5);
-        console.log(getPuntos("Rick")); 
-
-        //FinDebug
-
 	//Añadimos los atajos de teclado.
 	var keyA = game.input.keyboard.addKey(Phaser.Keyboard.A);
     keyA.onDown.add(atacarclick, this);
@@ -303,7 +321,7 @@ function update() //Función update: actualiza el juego.
 	 		con = false;
 	 		document.getElementById("Consoletext").innerHTML = "¡Has ganado! ¡Wubba Dubba lub lub!";
 	 		S_win.play();
-                        p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 100); //Puntos al ganar.
+            p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 100); //Puntos al ganar.
 	 		gameReset();
 	 	}
 	 	else
@@ -326,6 +344,12 @@ function update() //Función update: actualiza el juego.
 					if(con) //Si se ha pulsado el botón de confirmar.
 					{
 						document.getElementById("Consoletext").innerHTML = "Turno de los enemigos:";
+
+						document.getElementById("Consoletext2").innerHTML = "Jugador  -  Puntos" + "<br /><br />";
+						for (var i = 0; i < p.getJugadores().length; i++)
+						{
+							document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
+						}
 
 						var count = 0; //Contamos el número de enemigos en juego.
 
@@ -364,7 +388,12 @@ function update() //Función update: actualiza el juego.
 							}
 
 							p.getJugadores()[0].setAccionesDisp(4); //Reseteamos las acciones del jugador.
-
+                                                        
+                            for (var i = 0; i < p.getJugadores().length; i++)
+                            {
+                                putPuntos(p.getJugadores()[i].getPersonaje().getID(), p.getJugadores()[i].getPuntos()); //Por cada jugador, actualizamos los puntos en el servidor.
+                            }
+                                                        
 							turno++; //Incrementamos el turno.
 
 							//Reseteamos el booleano auxiliar y preparamos que se pulse el botón de confirmar.
@@ -412,21 +441,24 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 					if(p.getEnemigos()[i].getSalud() <= 0) //Si el enemigo pierde toda su salud.
 					{
 						p.getEnemigos()[i].getSprite().destroy(); //Eliminamos el sprite.
-						p.getEnemigos()[i] = undefined; //Eliminamos el enemigo.
-						i = p.getEnemigos().length; //Salimos del bucle, para no seguir atacando al resto de enemigos.
+						
 						document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Enemigo eliminado!";
-                                                if(p.getEnemigos()[i].getTipo() == 1) //Meeseek normal.
-                                                {
-                                                    p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 5); 
-                                                }
-                                                else if(p.getEnemigos()[i].getTipo() == 2) //Meeseek especial.
-                                                {
-                                                    p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 10); 
-                                                }
-                                                else if(p.getEnemigos()[i].getTipo() == 3) //Boss.
-                                                {
-                                                    p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 20); 
-                                                }
+
+                        if(p.getEnemigos()[i].getTipo() == 1) //Meeseek normal.
+                        {
+                            p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 5); 
+                        }
+                        else if(p.getEnemigos()[i].getTipo() == 2) //Meeseek especial.
+                        {
+                            p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 10); 
+                        }
+                        else if(p.getEnemigos()[i].getTipo() == 3) //Boss.
+                        {
+                            p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 20); 
+                        }
+                                                
+                        p.getEnemigos()[i] = undefined; //Eliminamos el enemigo.
+                        i = p.getEnemigos().length; //Salimos del bucle, para no seguir atacando al resto de enemigos.
 					}
 					else
 					{
@@ -504,6 +536,12 @@ function conti() //Función llamada al pulsar el botón "Continuar".
 		if(turno == 1) //Turno inicial.
 		{
    			document.getElementById("Consoletext").innerHTML = "¡Comienza la partida!";
+
+   		    document.getElementById("Consoletext2").innerHTML = "Jugador  -  Puntos" + "<br /><br />";
+			for (var i = 0; i < p.getJugadores().length; i++)
+			{
+				document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
+			}
   		}
   		else //Otro turno.
   		{
@@ -528,10 +566,10 @@ function conti() //Función llamada al pulsar el botón "Continuar".
 
 function getRandom(min, max) //Esta función recibe un máximo y un mínimo y devuelve un número aleatorio entre ambos.
 {
- if (min == 0) //Ejemplo: para 1 y 9, se generarían todos los números, pero para 0 y 9, sólo hasta el 8, así que modificamos a 0 y 10.
-  max += 1;
+ 	if (min == 0) //Ejemplo: para 1 y 9, se generarían todos los números, pero para 0 y 9, sólo hasta el 8, así que modificamos a 0 y 10.
+  		max += 1;
 
- return Math.floor((Math.random() * max) + min);
+ 	return Math.floor((Math.random() * max) + min);
 }
 
 
@@ -705,6 +743,11 @@ function CasillasAd(base) //Función que recibe un array índice de casilla y de
 
 function gameReset() //Función que resetea el juego.
 {
+    for (var i = 0; i < p.getJugadores().length; i++)
+    {
+        putPuntos(p.getJugadores()[i].getPersonaje().getID(), p.getJugadores()[i].getPuntos()); //Por cada jugador, actualizamos sus puntos en el servidor.
+    }
+
 	njug = 1;
 	turno = 1;
 	started = false;
@@ -720,6 +763,11 @@ function gameReset() //Función que resetea el juego.
 	p = new Partida(njug);
 
 	p.init(); //Inicializamos la partida.
+        
+    for (var i = 0; i < p.getJugadores().length; i++)
+    {
+        getPuntos(p.getJugadores()[i].getPersonaje().getID()); //Por cada jugador, actualizamos sus puntos en local (al resetear la partida se borran los datos).
+    }
 
 	document.getElementById("Consoletext").innerHTML += "<br /><br /> Reseteando el juego..."; 
 	document.getElementById("Consoletext").innerHTML += "<br /><br /> Pulse 'Continuar' para comenzar la partida.";
@@ -1242,10 +1290,10 @@ function Jugador() //Objeto Jugador.
 		return personaje;
 	} 
         
-        this.getPuntos = function()
-        {
-                return puntos;
-        }
+    this.getPuntos = function()
+    {
+        return puntos;
+    }
 
 
 	//Setters.
@@ -1331,6 +1379,11 @@ function Personaje(nom) //Objeto Personaje.
 	}
 
 	//Getters.
+    this.getID = function()
+    {
+        return id;
+    }
+        
 	this.getDados = function()
 	{
 		return dados;

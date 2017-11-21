@@ -1,35 +1,37 @@
 package es.urjc.code.rest;
 
-public class Jugador {
+public class Jugador 
+{
+    private String name;
+    private int puntos;
 	
-	private String name;
-	private int puntos;
+    public Jugador() 
+    {    
+    }
 	
-	public Jugador() {
-	}
-	
-	public Jugador(String name, int puntos) {
-		this.name = name;
-		this.puntos = puntos;
-	}
+    public Jugador(String name, int puntos) 
+    {
+	this.name = name;
+	this.puntos = puntos;
+    }
 
-
-    public String getName() {
+    public String getName() 
+    {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name) 
+    {
         this.name = name;
     }
 
-    public int getPuntos() {
+    public int getPuntos() 
+    {
         return puntos;
     }
 
-    public void setPuntos(int puntos) {
+    public void setPuntos(int puntos) 
+    {
         this.puntos = puntos;
     }
-
-    
- 
 }
