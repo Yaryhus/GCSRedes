@@ -61,7 +61,7 @@ El juego soporta de 2 a 4 jugadores de forma online, de manera que se irán suce
   - *Ataque/Defensa:* Acto seguido, si se encuentran en la misma casilla que un jugador tras haberse movido, atacan. Para ello, lanzan tantos dados como se indique según el enemigo (normal, jefe final, etc.), y el jugador atacado lanza los dados de su personaje para intentar defenderse. Cada acierto del enemigo es un impacto, y cada acierto del jugador, una defensa que lo contrarresta. Por cada impacto no defendido, el jugador sufre una herida. Cada jugador puede sufrir hasta 3 heridas, antes de morir.
   - *Aparición:* Una vez los enemigos han realizado sus acciones, aparecen más enemigos en los puntos designados del escenario. En función de cómo de avanzada vaya la partida, aparecerá un número mayor o menor de ellos. Si durante la aparición alcanza el número máximo de enemigos posibles en el tablero, de forma que no puedan aparecer más porque no "quepan", todos los enemigos actualmente en juego se "activan" y vuelven a realizar las acciones de movimiento y ataque/defensa. Tras esto, ya se hayan "activado" o no, se reinicia la ronda, volviendo a la fase de los jugadores.
 
-Esta sucesión se producirá indefinidamente, hasta que se obtenga la victoria (se cumple el objetivo) o la derrota (muerte de algún jugador), finalizando así la partida. <br><br>
+Esta sucesión se producirá indefinidamente, hasta que se obtenga la victoria (se cumple el objetivo) o la derrota (muerte de algún jugador), finalizando así la partida. 
 
 ---
 
