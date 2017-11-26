@@ -144,4 +144,6 @@ Se recomienda su uso para la ejecución/compilación del proyecto, aunque otro I
 
 Para ejecutar el juego, primero deberemos iniciar el servidor desde el IDE que corresponda (botón de play en NetBeans). Una vez iniciado, insertaremos en el navegador la siguiente URL: "localhost:8080/HideAndMeeseeks/Practica.html", y ya podremos jugar mediante el servidor.
 
+Alternativamente, si no se dispone de un IDE de desarrollo, podemos ejecutar el .jar desde la consola de comandos. Para ello, primero descargaremos el .zip del repositorio y lo descomprimiremos. Después, abrimos la consola de comandos (PowerShell o cmd) en la carpeta "jar" (dentro de HideAndMeeseeks). Para ello, podemos hacer Shift + Click en dicho directorio. Al hacerlo, se nos abrirá la consola, sobre la que deberemos escribir "java -jar HideAndMeeseeks.jar". Damos a enter y dejamos unos segundos hasta que se inicialice el servidor. Finalmente, copiamos la url en el navegador, y ya podremos jugar: "localhost:8080/HideAndMeeseeks/Practica.html".
+
 ---
