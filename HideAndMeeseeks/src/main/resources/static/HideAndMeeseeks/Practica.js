@@ -1,3 +1,4 @@
+
 /*
 Código JavaScript - Guillermo Amigó Urda, Alejandro Camuñas Casas y Sergio García Aloguín.
 Práctica final de Juegos en Red.
@@ -45,6 +46,24 @@ var movey; //Variable auxiliar para almacenar la y destino al moverse.
 var p; //Instancia de la partida.
 
 
+///////////////////////////////////// WebSockets /////////////////////////////////////////
+
+var connection = new WebSocket('ws://127.0.0.1:8080/echo');
+connection.onopen = function () {
+ connection.send('Hi');
+};
+connection.onerror = function(e) {
+ console.log("WS error: " + e);
+};
+connection.onmessage = function(msg) {
+ console.log("WS message: " + msg.data);
+};
+
+function msg1(message)
+{
+  //var message = $('#message').val();
+  connection.send(message);   
+}
 ///////////////////////////////////////// Red ///////////////////////////////////////////
 
 
