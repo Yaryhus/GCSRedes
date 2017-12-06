@@ -9,22 +9,18 @@ import org.springframework.web.socket.config.annotation.*;
 
 @SpringBootApplication
 @EnableWebSocket
-public class RestEjem1bApplication implements WebSocketConfigurer
-        
+public class RestEjem1bApplication implements WebSocketConfigurer   
 {
-    
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(echoHandler(), "/echo").setAllowedOrigins("*"); //To change body of generated methods, choose Tools | Templates.
+        registry.addHandler(redHandler(), "/red").setAllowedOrigins("*");
     }
-    
     
     @Bean
-    public WebsocketEchoHandler echoHandler ()
+    public WebsocketRedHandler redHandler ()
     {
-        return new WebsocketEchoHandler();
+        return new WebsocketRedHandler();
     }
-    
     
     public static void main(String[] args) 
     {
@@ -34,9 +30,5 @@ public class RestEjem1bApplication implements WebSocketConfigurer
         properties.setProperty("spring.resources.staticLocations", "classpath:/static/");
         app.setDefaultProperties(properties);
         app.run(args);
-        
-       
     }
-
-
 }
