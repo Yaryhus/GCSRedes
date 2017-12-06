@@ -48,22 +48,49 @@ var p; //Instancia de la partida.
 
 ///////////////////////////////////// WebSockets /////////////////////////////////////////
 
-var connection = new WebSocket('ws://127.0.0.1:8080/echo');
-connection.onopen = function () {
- connection.send('Hi');
-};
-connection.onerror = function(e) {
- console.log("WS error: " + e);
-};
-connection.onmessage = function(msg) {
- console.log("WS message: " + msg.data);
+var connection = new WebSocket("ws://" + window.location.host + "/red");
+
+connection.onopen = function () 
+{
+	connection.send(JSON.stringify({clave : "Hi" , message : "Hi"}));
 };
 
-function msg1(message)
+connection.onclose = function() 
 {
-  //var message = $('#message').val();
-  connection.send(message);   
+	console.log("Closing socket");
+};
+
+connection.onerror = function(e) 
+{
+	console.log("WS error: " + e);
+};
+
+connection.onmessage = function(mes) 
+{
+	console.log("Data: " + mes.data);
+	var msg = JSON.parse(mes.data);
+
+    if(msg.clave == "chat")
+    {
+        console.log("Chat: " + msg.message);
+    }
+    else
+    {
+        console.log("WS message: " + msg.message);
+    }
+};
+
+function RedEcho(msg)
+{
+    connection.send(JSON.stringify({clave : "echo" , message : msg}));
 }
+
+function RedChat(msg)
+{
+    connection.send(JSON.stringify({clave : "chat" , message : msg}));
+}
+
+
 ///////////////////////////////////////// Red ///////////////////////////////////////////
 
 
