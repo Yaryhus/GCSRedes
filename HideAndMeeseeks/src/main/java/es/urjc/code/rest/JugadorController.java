@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 public class JugadorController 
 {
@@ -25,6 +26,7 @@ public class JugadorController
     public ResponseEntity<Boolean> addJugador(@RequestBody Jugador jugador) 
     {
         Jugadores.add(jugador);
+        
         return new ResponseEntity<>(true, HttpStatus.CREATED);
     }
         
@@ -35,7 +37,9 @@ public class JugadorController
         for(int i=0; i<Jugadores.size();i++)
         {
 	    if(Jugadores.get(i).getName().equals(jugador))
+            {
                 return Jugadores.get(i).getPuntos();
+            }
         }
         
         return -1;
@@ -72,8 +76,8 @@ public class JugadorController
     }
         
     //Borrar un jugador.
-    @RequestMapping(value = "/deleteJugador", method = RequestMethod.DELETE)
-    public ResponseEntity<Boolean> deleteJugador(@RequestBody String jugador) 
+    @RequestMapping(value = "/deleteJugador/{jugador}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> deleteJugador(@PathVariable String jugador) 
     {
         for(int i=0; i<Jugadores.size();i++)
         {

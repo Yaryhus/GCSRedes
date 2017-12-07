@@ -12,12 +12,13 @@ import org.springframework.web.socket.config.annotation.*;
 public class RestEjem1bApplication implements WebSocketConfigurer   
 {
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) 
+    {
         registry.addHandler(redHandler(), "/red").setAllowedOrigins("*");
     }
     
     @Bean
-    public WebsocketRedHandler redHandler ()
+    public WebsocketRedHandler redHandler()
     {
         return new WebsocketRedHandler();
     }

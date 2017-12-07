@@ -1,4 +1,3 @@
-
 /*
 Código JavaScript - Guillermo Amigó Urda, Alejandro Camuñas Casas y Sergio García Aloguín.
 Práctica final de Juegos en Red.
@@ -43,58 +42,452 @@ var moveonce; //Booleano auxiliar para almacenar información de si los enemigos
 var movex; //Variable auxiliar para almacenar la x destino al moverse.
 var movey; //Variable auxiliar para almacenar la y destino al moverse.
 
+var began; //Variable que determina si la partida ha empezado.
+var full; //Variable que determina si la partida está llena.
+
+var initjugs; //Array auxiliar que almacena los personajes escogidos.
+
+var contchat; //Variable contador para las líneas del chat.
+var jugactivo; //Variable que almacena el jugador activo en métodos de red.
+var catchup; //Variable que almacena si debe haber movimiento para alcanzar al del servidor.
+var turnoenemigos; //Variable que determina si es el turno de los enemigos.
+var activo; //Variable que determina si el jugador está en su turno.
+var leader; //Variable que determina si el jugador es el líder de la sesión.
+
 var p; //Instancia de la partida.
 
 
 ///////////////////////////////////// WebSockets /////////////////////////////////////////
 
-var connection = new WebSocket("ws://" + window.location.host + "/red");
 
-connection.onopen = function () 
+var connection = new WebSocket("ws://" + window.location.host + "/red"); //Variable que almacena la conexión al servidor.
+
+connection.onopen = function() //Método llamado al abrirse la conexión.
 {
+	$("#logo").hide();
+	$("#Misc").hide();
+	$("#Borderframe").hide();
+	$("#Notificaciones").hide();
+	$("#Notificaciones2").hide();
+	$("#Barra").hide();
+
 	connection.send(JSON.stringify({clave : "Hi" , message : "Hi"}));
 };
 
-connection.onclose = function() 
+connection.onclose = function() //Método llamado al cerrarse la conexión.
 {
 	console.log("Closing socket");
 };
 
-connection.onerror = function(e) 
+connection.onerror = function(e) //Método llamado al recibir un error en la conexión.
 {
 	console.log("WS error: " + e);
 };
 
-connection.onmessage = function(mes) 
+connection.onmessage = function(mes) //Método llamado al recibir un mensaje en la conexión.
 {
-	console.log("Data: " + mes.data);
-	var msg = JSON.parse(mes.data);
+	console.log("Data: " + mes.data); //Mostramos el mensaje por consola.
+	var msg = JSON.parse(mes.data); //Legibilizamos el mensaje a Json.
 
-    if(msg.clave == "chat")
-    {
-        console.log("Chat: " + msg.message);
-    }
-    else
-    {
-        console.log("WS message: " + msg.message);
-    }
+	switch (msg.clave) //Comprobamos el valor de su clave para determinar el curso de acción.
+	{
+		case("moverPJ"): //Movemos al personaje.
+			console.log("Servidor moviendo al personaje: " + msg.jugador + ", a la casilla: " + msg.i + ", " + msg.j);
+			moverWebsockets(Number(msg.i), Number(msg.j), Number(msg.salud), msg.jugador);
+			break;
+
+		case("ruido"): //Hacemos ruido.
+			ruidoWebsockets(msg.jugador);
+			break;
+
+		case("atacaraenemigo"): //Atacamos al enemigo.
+			atacarWebsockets(Number(msg.hurt), Number(msg.enemigo), msg.jugador);
+			break;
+
+		case("moverenemigo"): //Movemos al enemigo.
+			moverEnemigosWebsockets(Number(msg.enemigo), Number(msg.casillau), Number(msg.casillav));
+			break;
+
+		case("atacarenemigo"): //Atacamos al jugador.
+			atacarEnemigosWebsockets(Number(msg.hurt), msg.jugador);
+			break;
+
+		case("spawnenemigo"): //Spawneamos el enemigo.
+			spawnEnemigosWebsockets(Number(msg.casillau), Number(msg.casillav), Number(msg.coordx), Number(msg.coordy), Number(msg.tipo));
+			break;
+
+		case("init"): //Inicializamos los jugadores de la partida y mandamos el response.
+			njug++;
+			initjugs[njug-1] = msg.message;
+
+			RedResponse();
+			break;
+
+		case("response"): //Actualizamos la lista de jugadores si no está ya en ella.
+			var contained = false;
+			
+			if (msg.message != "null")
+			{
+				for (var i = 0; i < initjugs.length; i++)
+				{
+					if (initjugs[i] == msg.message)
+					{
+						contained = true;
+					}
+				}
+
+				if(!contained)
+				{
+					njug++;
+					initjugs[njug-1] = msg.message;
+				}
+			}
+
+			break;
+
+		case("start"): //Empezamos la partida.
+			startWebsockets();
+			break;
+
+		case("continuar"): //Continuamos.
+			conti(true);
+			break;
+
+		case("leader"): //Establecemos la sesión como líder de la partida.
+			leader = true;
+			alert("Eres el líder de la partida.");
+			break;
+
+		case("enemies"): //Turno de los enemigos.
+			turnoenemigos = true;
+			alert("Turno de los enemigos.");
+			enemies();
+			break;
+
+		case("activate"): //Activamos el turno del jugador.
+			activo = true;
+			alert("Es tu turno.");
+			p.getJugadores()[0].setAccionesDisp(4);
+			break;
+
+		case("bye"): //Si un jugador se va de la partida.
+			$("#logo").hide();
+			$("#Misc").hide();
+			$("#Borderframe").hide();
+			$("#Notificaciones").hide();
+			$("#Notificaciones2").hide();
+			$("#Barra").hide();
+
+			alert("Alguien ha abandonado la partida en curso. Por favor, busque otra.");
+			break;
+
+		case("full"): //Si la partida está llena.
+			full = true;
+
+			$("#logo").hide();
+			$("#Misc").hide();
+			$("#Borderframe").hide();
+			$("#Notificaciones").hide();
+			$("#Notificaciones2").hide();
+			$("#Barra").hide();
+
+			alert("Partida llena o empezada. Por favor, busque otra.");
+			break;
+
+
+		case("chat"): //Mensaje de chat.
+			console.log("Chat: " + msg.message);
+
+			if (contchat <= 18) //Si aún queda espacio.
+			{
+				document.getElementById("Consoletext3").innerHTML += msg.message + "<br>";
+				contchat += 1;
+			}
+			else //Si está lleno.
+			{
+				document.getElementById("Consoletext3").innerHTML = msg.message + "<br>";
+				contchat = 1;
+			}
+			
+			break;
+
+		case("echo"): //Mensaje de eco.
+			console.log("Echo: " + msg.message);
+			break;
+
+		default: 
+			break;
+	}
 };
 
-function RedEcho(msg)
+function RedInit() //Método de llamada de inicialización.
+{
+	 connection.send(JSON.stringify({clave : "init" , begin: began , message : initjugs[0]}));
+}
+
+function RedResponse() //Método de llamada de respuesta.
+{
+	 connection.send(JSON.stringify({clave : "response" , message : initjugs[0]}));
+}
+
+function RedStart() //Método de llamada de comienzo de partida.
+{
+	connection.send(JSON.stringify({clave : "start"}));
+}
+
+function RedContinuar() //Método de llamada de continuar.
+{
+	connection.send(JSON.stringify({clave : "continuar"}));
+}
+
+function RedDeactivate() //Método de llamada de desactivar turno.
+{
+	connection.send(JSON.stringify({clave : "deactivate"}));
+}
+
+function RedRestart() //Método de llamada de reiniciar la ronda.
+{
+	connection.send(JSON.stringify({clave : "restart"}));
+}
+
+function RedEcho(msg) //Método de llamada de eco.
 {
     connection.send(JSON.stringify({clave : "echo" , message : msg}));
 }
 
-function RedChat(msg)
+function RedChat(msg) //Método de llamada de chat.
 {
     connection.send(JSON.stringify({clave : "chat" , message : msg}));
 }
 
+function RedMoverPJ(jug) //Método de llamada de mover al personaje.
+{
+	connection.send(JSON.stringify({clave : "moverPJ" , jugador : p.getJugadores()[jug].getPersonaje().getID() , i : p.getJugadores()[jug].getCasilla()[0] , j : p.getJugadores()[jug].getCasilla()[1] , salud : p.getJugadores()[jug].getPersonaje().getSalud()}));
+}
 
-///////////////////////////////////////// Red ///////////////////////////////////////////
+function RedRuido(jug) //Método de llamada de ruido.
+{
+	connection.send(JSON.stringify({clave : "ruido" , jugador : p.getJugadores()[jug].getPersonaje().getID()}));
+}
+
+function RedAtacarAEnemigo(dano, i, jug) //Método de llamada de ataque a un enemigo.
+{
+	connection.send(JSON.stringify({clave : "atacaraenemigo", jugador : p.getJugadores()[jug].getPersonaje().getID(), hurt : dano , enemigo : i}));
+}
+
+function RedMoverEnemigo(i, u, v) //Método de llamada de mover a un enemigo.
+{
+	connection.send(JSON.stringify({clave : "moverenemigo", enemigo : i , casillau : u , casillav : v}));
+}
+
+function RedAtacarEnemigo(salud, jug) //Método de llamada de ataque a un jugador.
+{
+	connection.send(JSON.stringify({clave : "atacarenemigo", hurt : salud , jugador : p.getJugadores()[jug].getPersonaje().getID()}));
+}
+
+function RedSpawnEnemigos(u, v, x, y, t) //Método de llamada de spawn de un enemigo.
+{
+	connection.send(JSON.stringify({clave : "spawnenemigo", tipo : t , coordx : x , coordy : y , casillau : u , casillav : v}));
+}
+
+function moverWebsockets(i, j, health, jug) //Método de mover un personaje.
+{
+	for (var u = 0; u < p.getJugadores().length; u++) //Buscamos el jugador con el personaje recibido.
+	{
+		if (jug == p.getJugadores()[u].getPersonaje().getID())
+		{
+			jugactivo = u;
+			u = p.getJugadores().length;
+		}
+	}
+
+	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+	//Movimiento.
+	var rect = c[i][j].getRect(); //Guardamos el rectángulo de la casilla.
+
+	var saludAnt = p.getJugadores()[jugactivo].getPersonaje().getSalud();
+
+    p.getJugadores()[jugactivo].getPersonaje().setSalud(health); //Actualizamos su salud.
+
+    if(p.getJugadores()[jugactivo].getPersonaje().getSalud() < saludAnt) //Si el jugador ha perdido salud.
+    {
+     	document.getElementById("Consoletext").innerHTML += "<br /><br /> Tu compañero evade sin éxito. La salud de tu compañero es: " + p.getJugadores()[jugactivo].getPersonaje().getSalud() + ".";
+    }
+
+   	c[p.getJugadores()[jugactivo].getCasilla()[0]][p.getJugadores()[jugactivo].getCasilla()[1]].setPersonajes(c[p.getJugadores()[jugactivo].getCasilla()[0]][p.getJugadores()[jugactivo].getCasilla()[1]].getPersonajes() - 1); //Disminuimos el número de personajes de la casilla.
+	p.getJugadores()[jugactivo].setCasilla(i,j); //Fijamos la casilla del jugador a la nueva.
+	c[i][j].setPersonajes(c[i][j].getPersonajes() + 1); //Aumentamos el número de personajes de la nueva casilla.
+							
+	//Calculamos las coordenadas de destino de la casilla nueva como la posición de ésta mas la mitad del sprite (para centrarlo).
+	movex = Math.round(c[i][j].getPos()[0] - 28.5);
+	movey = Math.round(c[i][j].getPos()[1] - 36.25);
+
+   	moving = true; //Fijamos a true el booleano de animación de movimiento.
+   	catchup = true; //El jugador tiene que moverse.
+
+	p.getJugadores()[jugactivo].setAccionesDisp(p.getJugadores()[jugactivo].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+}
+
+function ruidoWebsockets(jug) //Método de hacer ruido.
+{
+	for (var i = 0; i < p.getJugadores().length; i++) //Buscamos al jugador.
+	{
+		if (jug == p.getJugadores()[i].getPersonaje().getID())
+		{
+			jugactivo = i;
+			i = p.getJugadores().length;
+		}
+	}
+
+	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+	c[p.getJugadores()[jugactivo].getCasilla()[0]][p.getJugadores()[jugactivo].getCasilla()[1]].setRuido(c[p.getJugadores()[jugactivo].getCasilla()[0]][p.getJugadores()[jugactivo].getCasilla()[1]].getRuido() + 5); //Aumentamos el ruido de la casilla.
+	document.getElementById("Consoletext").innerHTML += "<br /><br /> Se ha generado mucho ruido en la casilla.";
+
+	S_ruido.play();
+
+	p.getJugadores()[jugactivo].setAccionesDisp(p.getJugadores()[jugactivo].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+}
+
+function atacarWebsockets(daño, i, jug) //Método de atacar a un enemigo.
+{
+	for (var u = 0; u < p.getJugadores().length; u++) //Buscamos al jugador.
+	{
+		if (jug == p.getJugadores()[u].getPersonaje().getID())
+		{
+			jugactivo = u;
+			u = p.getJugadores().length;
+		}
+	}
+
+	p.getEnemigos()[i].setSalud(p.getEnemigos()[i].getSalud() - daño); //Disminuimos la salud del enemigo en la tirada realizada.
+
+	document.getElementById("Consoletext").innerHTML += "<br /><br /> Tu compañero ataca al enemigo.";
+
+	S_punch.play();
+
+	if(p.getEnemigos()[i].getSalud() <= 0) //Si el enemigo pierde toda su salud.
+	{
+		p.getEnemigos()[i].getSprite().destroy(); //Eliminamos el sprite.
+						
+		document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Enemigo eliminado!";
+
+        if(p.getEnemigos()[i].getTipo() == 1) //Meeseek normal.
+        {
+            p.getJugadores()[jugactivo].setPuntos(p.getJugadores()[jugactivo].getPuntos() + 5); 
+        }
+        else if(p.getEnemigos()[i].getTipo() == 2) //Meeseek especial.
+        {
+            p.getJugadores()[jugactivo].setPuntos(p.getJugadores()[jugactivo].getPuntos() + 10); 
+        }
+        else if(p.getEnemigos()[i].getTipo() == 3) //Boss.
+        {
+            p.getJugadores()[jugactivo].setPuntos(p.getJugadores()[jugactivo].getPuntos() + 20); 
+        }
+                                                
+        p.getEnemigos()[i] = undefined; //Eliminamos el enemigo.
+	}
+	else
+	{
+		document.getElementById("Consoletext").innerHTML += "<br /><br /> Salud restante del enemigo: " + p.getEnemigos()[i].getSalud() + ".";
+	}
+
+	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+	c[p.getJugadores()[jugactivo].getCasilla()[0]][p.getJugadores()[jugactivo].getCasilla()[1]].setRuido(c[p.getJugadores()[jugactivo].getCasilla()[0]][p.getJugadores()[jugactivo].getCasilla()[1]].getRuido() + 2); //Aumentamos el ruido de la casilla.
+	document.getElementById("Consoletext").innerHTML += "<br /><br /> Se ha generado un poco de ruido en la casilla.";
+
+	p.getJugadores()[jugactivo].setAccionesDisp(p.getJugadores()[jugactivo].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+}
+
+function moverEnemigosWebsockets(i, u, v) //Método de mover a los enemigos.
+{
+	var e = p.getEnemigos(); //Guardamos los enemigos de la partida.
+	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
+
+	movinge = true;
+	e[i].setCasilla(u, v); //Movemos a la casilla [i,j].
+	e[i].setMoveset(Math.round(c[u][v].getPos()[0] - 28.5 + getRandom(-35, 35)), Math.round(c[u][v].getPos()[1] - 36.25 + getRandom(-35, 35))); //Actualizamos las coordenadas a las que se debe mover el sprite, multiplicando por un pequeño offset aleatorio.
+
+	c[u][v].setRuido(0); //Reseteamos el ruido de la ronda.
+}
+
+function spawnEnemigosWebsockets(u, v, x, y, t) //Método de spawn del enemigo.
+{
+	var index = p.getEnemigos().length; //Índice a partir del cual añadir los enemigos al array.
+
+	switch (getRandom(0, 1))
+	{
+		case 0:
+		S_Meeseek_spawn1.play();
+		break;
+
+		case 1:
+		S_Meeseek_spawn2.play();
+		break;
+	}
+
+	//Creamos el enemigo con los datos rellenados.
+	p.getEnemigos()[index] = new Enemigo(t, x, y);
+	p.getEnemigos()[index].init();
+	p.getEnemigos()[index].setCasilla(u,v);
+
+	document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Han aparecido enemigos!";
+}
+
+function atacarEnemigosWebsockets(salud, jug) //Método de atacar a un jugador.
+{
+	for (var u = 0; u < p.getJugadores().length; u++) //Buscamos al jugador.
+	{
+		if (jug == p.getJugadores()[u].getPersonaje().getID())
+		{
+			jugactivo = u;
+			u = p.getJugadores().length;
+		}
+	}
+
+    var saludAnt = p.getJugadores()[jugactivo].getPersonaje().getSalud();
+
+    p.getJugadores()[jugactivo].getPersonaje().setSalud(salud); //Actualizamos la salud.
+
+    if(p.getJugadores()[jugactivo].getPersonaje().getSalud() < saludAnt) //Si ha perdido salud.
+    {
+     	S_Rick_daño.play();
+    }
+
+    document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Atacan a tu compañero! Salud resultante: " + p.getJugadores()[jugactivo].getPersonaje().getSalud() + ".";
+}
+
+function startWebsockets() //Método de comenzar una partida.
+{
+	began = true;
+	activo = false;
+
+	//Mostramos los elementos adecuados.
+	$("#logo").hide();
+	$("#Misc").hide();
+	$("#Borderframe").show();
+	$("#Notificaciones").show();
+	$("#Notificaciones2").show();
+	$("#Barra").show();
+
+	turno++;
+	game = new Phaser.Game(1000, 750, Phaser.CANVAS, 'phaser', { preload: preload, create: create, update: update }); //Creamos el juego.
+}
+
+function enviarchat() //Método de enviar mensaje al chat.
+{
+	var string = p.getJugadores()[0].getPersonaje().getID() + ":  " + document.getElementById("mensajetext").value;
+
+	RedChat(string);
+}
 
 
-function putPuntos(name,puntosSus) //Función que hace un PUT (sustituye) al servidor de los puntos del jugador seleccionado.
+///////////////////////////////////////// Rest //////////////////////////////////////////
+
+
+function putPuntos(name, puntosSus) //Función que hace un PUT (sustituye) al servidor de los puntos del jugador seleccionado.
 {
 	$.ajax({
  		method:"PUT",
@@ -104,7 +497,7 @@ function putPuntos(name,puntosSus) //Función que hace un PUT (sustituye) al ser
 	});
 }
 
-function postPuntos(name,puntosSum) //Función que hace un POST (añade) al servidor de los puntos del jugador seleccionado.
+function postPuntos(name, puntosSum) //Función que hace un POST (añade) al servidor de los puntos del jugador seleccionado.
 {
 	$.ajax({
 		method:"POST",
@@ -141,14 +534,26 @@ function getPuntos(name) //Función que hace un GET al servidor de los puntos de
 	});
 }
  
-function juga() //Función que inicializa los jugadores en el servidor.
+function juga(n) //Función que inicializa los jugadores en el servidor.
 {
     $.ajax({
 		method:"POST",
 		url:"http://localhost:8080/jugadores",
-		data : JSON.stringify({name:"Rick",puntos:0}),
+		data : JSON.stringify({name : n , puntos : 0}),
 		headers:{ "Content-type":"application/json"}
     });
+}
+
+function getjuga() //Función que devuelve los jugadores del servidor.
+{
+	$.ajax({
+		method:"GET",
+		url:"http://localhost:8080/jugadores",
+		headers:{ "Content-type":"application/json"}
+	}).done(function(data)
+	{
+	    console.log(data);
+	});
 }
 
 
@@ -156,10 +561,7 @@ function juga() //Función que inicializa los jugadores en el servidor.
 
 
 $(document).ready(function() //Función inicial.
-{ 
-	//Inicializamos los jugadores.
-    juga();
-
+{
 	//Inicializamos las variables.
 	mute = false;
 	njug = 1;
@@ -172,20 +574,47 @@ $(document).ready(function() //Función inicial.
 	moving = false;
 	movex = 0;
 	movey = 0;
-        
-	//Ocultamos los elementos adecuados.
-	$("#logo").show();
-	$("#Misc").show();
-	$("#Borderframe").hide();
-	$("#Notificaciones").hide();
-	$("#Notificaciones2").hide();
-	$("#Barra").hide();
+	began = false;
+	activo = true;
+	leader = false;
+	aux = false;
+	turnoenemigos = false;
+	contchat = 0;
+
+	if (!full) //Si la partida no está llena.
+	{
+		initjugs = new Array();
+
+		//Pedimos el nombre de un personaje.
+		do 
+		{
+			initjugs[0] = prompt("Introduce el nombre del personaje que quieres ser (Personajes disponibles: Rick, Morty, Summer, Jerry, Beth y MrP):");
+		} 
+		while (initjugs[0] != "Rick" && initjugs[0] != "Morty" && initjugs[0] != "Summer" && initjugs[0] != "Beth" && initjugs[0] != "Jerry" && initjugs[0] != "MrP");
+	        
+		//Ocultamos los elementos adecuados.
+		$("#logo").show();
+		$("#Misc").show();
+		$("#Borderframe").hide();
+		$("#Notificaciones").hide();
+		$("#Notificaciones2").hide();
+		$("#Barra").hide();
+
+		//Inicializamos los jugadores.
+		if(initjugs[0] != "null")
+	    {
+	    	juga(initjugs[0]);
+		}
+
+		//Llamada inicial.
+	    RedInit();
+	}
 })
 
 
 $(window).keypress(function (e)  //Función que detecta si se pulsa espacio para iniciar el juego.
 {
-	if (turno == 0 && (e.keyCode === 0 || e.keyCode === 32)) 
+	if (leader && full != true && !began && turno == 0 && (e.keyCode === 0 || e.keyCode === 32)) //Si se pulsa espacio, es el líder y ni está llena ni ha empezado la partida.
 	{
 	    e.preventDefault();
 
@@ -198,6 +627,10 @@ $(window).keypress(function (e)  //Función que detecta si se pulsa espacio para
 	    $("#Barra").show();
 
 	    turno++;
+	    began = true;
+
+	    RedStart(); //Llamada para empezar la partida.
+
 	    game = new Phaser.Game(1000, 750, Phaser.CANVAS, 'phaser', { preload: preload, create: create, update: update }); //Creamos el juego.
 	}
 })
@@ -345,6 +778,7 @@ function create() //Función create: inicia el juego.
 	document.getElementById("mover").addEventListener("click", moverclick);
 	document.getElementById("ruido").addEventListener("click", ruidoclick);
 	document.getElementById("continuar").addEventListener("click", conti);
+	document.getElementById("send-btn").addEventListener("click", enviarchat);
 	document.getElementById("phaser").addEventListener("mouseout", function(){ mouseoff = true; });
 	document.getElementById("phaser").addEventListener("mouseover", function(){ mouseoff = false; });
 }
@@ -352,7 +786,17 @@ function create() //Función create: inicia el juego.
 
 function update() //Función update: actualiza el juego.
 {
-	if (p.getJugadores()[0].getPersonaje().getSalud() <= 0) //Si el personaje ha muerto (perder).
+	var muerto = false;
+
+	for (var i = 0; i < p.getJugadores().length; i++) //Comprobamos si algún jugador ha muerto.
+	{
+		if (p.getJugadores()[i].getPersonaje().getSalud() <= 0)
+		{
+			muerto = true;
+		}
+	}
+
+	if (muerto) //Si el personaje ha muerto (perder).
 	{
 		con = false;
 		p.getJugadores()[0].getPersonaje().getSprite().destroy(); //Eliminamos el sprite.
@@ -362,7 +806,17 @@ function update() //Función update: actualiza el juego.
 	} 
 	else
 	{
-		if(!moving && (p.getJugadores()[0].getCasilla()[0] == 4) && (p.getJugadores()[0].getCasilla()[1] == 7)) //Si el jugador está en la casilla meta (ganar).
+		var ganado = false;
+
+		for (var i = 0; i < p.getJugadores().length; i++) //Comprobamos si algún jugador ha ganado.
+		{
+			if ((p.getJugadores()[i].getCasilla()[0] == 4) && (p.getJugadores()[i].getCasilla()[1] == 7))
+			{
+				ganado = true;
+			}
+		}
+
+		if(!moving && ganado) //Si el jugador está en la casilla meta (ganar).
 	 	{
 	 		con = false;
 	 		document.getElementById("Consoletext").innerHTML = "¡Has ganado! ¡Wubba Dubba lub lub!";
@@ -377,88 +831,21 @@ function update() //Función update: actualiza el juego.
 				esturno = (p.getJugadores()[0].getAccionesDisp() > 0) //Fijamos el booleano a true si: acciones > 0.
 				document.getElementById("Acciones").innerHTML = "(Turno: " + turno + ")" + " - Acciones disponibles: " + p.getJugadores()[0].getAccionesDisp(); //Mostramos las acciones disponibles.
 
-				if (!esturno && !moving && !movinge) //Si ha terminado el turno del jugador.
+				if(!esturno) //Si no quedan acciones.
 				{
-					if(!aux) //Utilizamos el booleano auxiliar para realizar este fragmento de código una sola vez al principio del turno enemigo.
-					{
-						document.getElementById("Consoletext").innerHTML += "<br /><br /> Fin del turno de los jugadores. ¡Turno de los enemigos! (Continuar)";
-						aux = true;
-						con = false;
-						started = false;
-					}
-
-					if(con) //Si se ha pulsado el botón de confirmar.
-					{
-						document.getElementById("Consoletext").innerHTML = "Turno de los enemigos:";
-
-						document.getElementById("Consoletext2").innerHTML = "Jugador  -  Puntos" + "<br /><br />";
-						for (var i = 0; i < p.getJugadores().length; i++)
-						{
-							document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
-						}
-
-						var count = 0; //Contamos el número de enemigos en juego.
-
-						for(var i = 0; i < p.getEnemigos().length; i++)
-						{
-							if(p.getEnemigos()[i] instanceof Enemigo)
-							{
-								count++;
-							}
-						}
-
-						if (!moveonce) //Si no se han movido aún.
-						{
-							S_IA_RoundStart.play();
-							moverEnemigos(); //Movemos a los enemigos.
-							moveonce = true;
-						}
-					
-						if(!movinge) //Si no se están moviendo.
-						{
-							atacarEnemigo(); //Los enemigos atacan.
-
-							if (count >= 15) //Si hay 15 o más enemigos en juego, máximo alcanzable, se vuelven a activar.
-							{
-								document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Oh, oh! ¡Demasiados Meeseeks! ¡Vuelven a activar su turno muy mosqueados!";
-								S_IA_furia.play();
-								moverEnemigos(); //Movemos a los enemigos.
-								atacarEnemigo(); //Los enemigos atacan.
-							}
-							else
-							{
-								if (getRandom(0, 3) != 0) //Hay un 75% de que aparezca un enemigo.
-								{
-									spawnEnemigo();
-								}
-							}
-
-							p.getJugadores()[0].setAccionesDisp(4); //Reseteamos las acciones del jugador.
-                                                        
-                            for (var i = 0; i < p.getJugadores().length; i++)
-                            {
-                                putPuntos(p.getJugadores()[i].getPersonaje().getID(), p.getJugadores()[i].getPuntos()); //Por cada jugador, actualizamos los puntos en el servidor.
-                            }
-                                                        
-							turno++; //Incrementamos el turno.
-
-							//Reseteamos el booleano auxiliar y preparamos que se pulse el botón de confirmar.
-							aux = false;
-							moveonce = false;
-							con = false;
-							started = false;
-									
-							if (p.getJugadores()[0].getPersonaje().getSalud() > 0) //Si el personaje no ha muerto.
-							{
-								document.getElementById("Consoletext").innerHTML += "<br /><br /> Fin del turno de los enemigos. ¡Turno de los jugadores! (Continuar)";
-							}	
-						}
-					}
+					con = false;
 				}
 			}
 
 			moverAnimE();
 			updateMover();
+		}
+
+		document.getElementById("Consoletext2").innerHTML = "Jugador  -  Puntos" + "<br /><br />";
+		
+		for (var i = 0; i < p.getJugadores().length; i++)
+		{
+			document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
 		}
     }
 }
@@ -469,7 +856,7 @@ function update() //Función update: actualiza el juego.
 
 function atacarclick() //Función llamada al pulsar el botón "Atacar".
 {
-	if(!move && !moving && started) //Si no se está reproduciendo la animación de mover.
+	if(!move && !moving && started && activo) //Si no se está reproduciendo la animación de mover.
 	{
 		if(esturno) //Si es el turno del jugador (puede realizar sus acciones).
 		{
@@ -483,6 +870,8 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 					document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Atacas! Resultado del ataque: <br /> Has lanzado " + p.getJugadores()[0].getPersonaje().getDados() + " dados de ataque, de los cuales han acertado " + tirada + ".";
 
 					S_punch.play();
+
+					RedAtacarAEnemigo(tirada, i, 0); //Llamada para atacar al servidor.
 
 					if(p.getEnemigos()[i].getSalud() <= 0) //Si el enemigo pierde toda su salud.
 					{
@@ -527,7 +916,7 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 
 function moverclick() //Función llamada al pulsar el botón "Mover".
 {
-	if(!moving && started) //Si no se está reproduciendo la animación de mover.
+	if(!moving && started && activo) //Si no se está reproduciendo la animación de mover.
 	{
 	 	if (!move) //Si no se está en el modo mover.
 	 	{
@@ -563,7 +952,7 @@ function ruidoclick() //Función llamada al pulsar el botón "Hacer Ruido".
 {
 	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
 
-	if(!move && !moving && started && esturno) //Si no se está reproduciendo la animación de mover.
+	if(!move && !moving && started && esturno && activo) //Si no se está reproduciendo la animación de mover.
 	{
 		c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].setRuido(c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].getRuido() + 5); //Aumentamos el ruido de la casilla.
 	 	document.getElementById("Consoletext").innerHTML += "<br /><br /> Se ha generado mucho ruido en la casilla.";
@@ -571,14 +960,19 @@ function ruidoclick() //Función llamada al pulsar el botón "Hacer Ruido".
 	 	S_ruido.play();
 
 	 	p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+
+	 	RedRuido(0); //Llamada para hacer ruido en el servidor.
 	}
 }
 
 
-function conti() //Función llamada al pulsar el botón "Continuar".
+function conti(net) //Función llamada al pulsar el botón "Continuar".
 {
-	if (!con) //Si hay que continuar.
+	if (!con && activo) //Si hay que continuar.
 	{
+		if(net == undefined || net == true) //Si no continuamos en local (no el líder).
+			RedContinuar();
+
 		if(turno == 1) //Turno inicial.
 		{
    			document.getElementById("Consoletext").innerHTML = "¡Comienza la partida!";
@@ -599,10 +993,16 @@ function conti() //Función llamada al pulsar el botón "Continuar".
    			}
 
    			document.getElementById("Consoletext").innerHTML = "Turno de los jugadores:";
-  		}
+   	  	}
 
   		con = true;
   		started = true; //Fijamos el booleano a true al empezar la partida.
+
+  		if(p.getJugadores()[0].getAccionesDisp() <= 0) //Si no quedan acciones.
+  		{
+  			activo = false;
+  			RedDeactivate(); //Cambiamos el turno.
+  		}
  	}
 }
 
@@ -794,7 +1194,6 @@ function gameReset() //Función que resetea el juego.
         putPuntos(p.getJugadores()[i].getPersonaje().getID(), p.getJugadores()[i].getPuntos()); //Por cada jugador, actualizamos sus puntos en el servidor.
     }
 
-	njug = 1;
 	turno = 1;
 	started = false;
 	esturno = false;
@@ -824,57 +1223,115 @@ function updateMover() //Función expansión de update para el modo mover del ju
 {
 	var c = p.getMapa().getTablero(); //Guardamos la matriz del tablero.
 
-	if (move) //Si se está en el modo mover.
+	if (!catchup) //Si no tiene que alcanzar al movimiento de otro jugador.
 	{
-		var adyacentes = CasillasAd(p.getJugadores()[0].getCasilla()); //Guardamos las casillas adyacentes.
-
-		for(var i = 0; i < adyacentes.length; i++) //Pintamos las casillas adyacentes de rojo.
+		if (move) //Si se está en el modo mover.
 		{
-			adyacentes[i].getGraphics().destroy(); //Limpiamos la casilla.
-			
-			if(adyacentes[i] != (c[4][7])) //Si la casilla no es la meta.
-			{
-				adyacentes[i].pintRect(0xff0000, 0.3); //Pintamos de rojo la casilla.
-			}
-			else //Si la casilla es la meta.
-			{
-				adyacentes[i].pintRect(0x00ff00, 0.3); //Pintamos de verde la casilla.
-			}
-		}
+			var adyacentes = CasillasAd(p.getJugadores()[0].getCasilla()); //Guardamos las casillas adyacentes.
 
- 		//Movimiento.
-		if(game.input.activePointer.isDown) //Si se pulsa el ratón.
-	 	{
- 			for (var i = 0; i < 7; i++)
+			for(var i = 0; i < adyacentes.length; i++) //Pintamos las casillas adyacentes de rojo.
 			{
-				for(var j = 0; j < 9; j++)
+				adyacentes[i].getGraphics().destroy(); //Limpiamos la casilla.
+				
+				if(adyacentes[i] != (c[4][7])) //Si la casilla no es la meta.
 				{
-					if(c[i][j] instanceof Casilla) //Si la posición del tablero es una casilla.
+					adyacentes[i].pintRect(0xff0000, 0.3); //Pintamos de rojo la casilla.
+				}
+				else //Si la casilla es la meta.
+				{
+					adyacentes[i].pintRect(0x00ff00, 0.3); //Pintamos de verde la casilla.
+				}
+			}
+
+	 		//Movimiento.
+			if(game.input.activePointer.isDown) //Si se pulsa el ratón.
+		 	{
+	 			for (var i = 0; i < 7; i++)
+				{
+					for(var j = 0; j < 9; j++)
 					{
-						var rect = c[i][j].getRect(); //Guardamos el rectángulo de la casilla.
-
-						if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y) && (c[i][j].getColor() == 0xff0000 || c[i][j].getColor() == 0x00ff00)) //Si el ratón está encima del rectángulo y es rojo o verde.
+						if(c[i][j] instanceof Casilla) //Si la posición del tablero es una casilla.
 						{
-   							evadir(); //Comprobamos la evasión de enemigos.
+							var rect = c[i][j].getRect(); //Guardamos el rectángulo de la casilla.
 
-   							c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].setPersonajes(c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].getPersonajes() - 1); //Disminuimos el número de personajes de la casilla.
-							p.getJugadores()[0].setCasilla(i,j); //Fijamos la casilla del jugador a la nueva.
-							c[i][j].setPersonajes(c[i][j].getPersonajes() + 1); //Aumentamos el número de personajes de la nueva casilla.
-							
-							//Calculamos las coordenadas de destino de la casilla nueva como la posición de ésta mas la mitad del sprite (para centrarlo).
-							movex = Math.round(c[i][j].getPos()[0] - 28.5);
-							movey = Math.round(c[i][j].getPos()[1] - 36.25);
+							if(Phaser.Rectangle.contains(rect,game.input.x,game.input.y) && (c[i][j].getColor() == 0xff0000 || c[i][j].getColor() == 0x00ff00)) //Si el ratón está encima del rectángulo y es rojo o verde.
+							{
+	   							evadir(); //Comprobamos la evasión de enemigos.
 
-   							moving = true; //Fijamos a true el booleano de animación de movimiento.
+	   							c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].setPersonajes(c[p.getJugadores()[0].getCasilla()[0]][p.getJugadores()[0].getCasilla()[1]].getPersonajes() - 1); //Disminuimos el número de personajes de la casilla.
+								p.getJugadores()[0].setCasilla(i,j); //Fijamos la casilla del jugador a la nueva.
+								c[i][j].setPersonajes(c[i][j].getPersonajes() + 1); //Aumentamos el número de personajes de la nueva casilla.
+								
+								//Calculamos las coordenadas de destino de la casilla nueva como la posición de ésta mas la mitad del sprite (para centrarlo).
+								movex = Math.round(c[i][j].getPos()[0] - 28.5);
+								movey = Math.round(c[i][j].getPos()[1] - 36.25);
 
-							p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+	   							moving = true; //Fijamos a true el booleano de animación de movimiento.
+
+								p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+
+								RedMoverPJ(0); //Llamada para mover al personaje.
+							}
+						}
+					}
+				}
+
+				move = false; //Salimos del modo mover.
+
+				//Limpiamos el tablero.
+				for (var i = 0; i < 7; i++)
+				{
+					for(var j = 0; j < 9; j++)
+					{
+						if(c[i][j] instanceof Casilla)
+						{
+							c[i][j].setColor(0xFFFFFF);
+							c[i][j].getGraphics().destroy();
 						}
 					}
 				}
 			}
+		} 
 
-			move = false; //Salimos del modo mover.
+		if(!mouseoff) //Si el ratón está en el canvas.
+		{
+			//Iluminación del cursor.
+		 	for (var i = 0; i < 7; i++)
+			{
+				for(var j = 0; j < 9; j++)
+				{
+					if(c[i][j] instanceof Casilla)
+					{
+						var rect = c[i][j].getRect();
 
+						if (c[i][j].getColor() != 0xff0000 && c[i][j].getColor() != 0x00ff00) //Si el color no es rojo ni verde.
+						{
+							c[i][j].getGraphics().destroy(); //Destruimos el rectángulo.
+						}
+								
+						if(Phaser.Rectangle.contains(rect, game.input.x, game.input.y)) //Si el rectángulo está debajo del cursor.
+						{
+							if (c[i][j].getColor() != 0xff0000 && c[i][j].getColor() != 0x00ff00) //Si el color no es rojo ni verde.
+							{
+								c[i][j].pintRect(0xFFFFFF,0.6); //Pintamos de blanco.
+							}
+							else if (c[i][j].getColor() == 0xff0000) //El color es rojo.
+							{
+								c[i][j].getGraphics().destroy();
+								c[i][j].pintRect(0xff0000, 0.8); //Pintamos de rojo oscuro.
+							}
+							else if (c[i][j].getColor() == 0x00ff00) //El color es verde.
+							{
+								c[i][j].getGraphics().destroy();
+								c[i][j].pintRect(0x00ff00, 0.8); //Pintamos de verde oscuro.
+							}
+						} 
+					}
+				}
+			}
+		}
+		else //Si el ratón no está en el canvas.
+		{
 			//Limpiamos el tablero.
 			for (var i = 0; i < 7; i++)
 			{
@@ -888,62 +1345,9 @@ function updateMover() //Función expansión de update para el modo mover del ju
 				}
 			}
 		}
-	} 
-
-	if(!mouseoff) //Si el ratón está en el canvas.
-	{
-		//Iluminación del cursor.
-	 	for (var i = 0; i < 7; i++)
-		{
-			for(var j = 0; j < 9; j++)
-			{
-				if(c[i][j] instanceof Casilla)
-				{
-					var rect = c[i][j].getRect();
-
-					if (c[i][j].getColor() != 0xff0000 && c[i][j].getColor() != 0x00ff00) //Si el color no es rojo ni verde.
-					{
-						c[i][j].getGraphics().destroy(); //Destruimos el rectángulo.
-					}
-							
-					if(Phaser.Rectangle.contains(rect, game.input.x, game.input.y)) //Si el rectángulo está debajo del cursor.
-					{
-						if (c[i][j].getColor() != 0xff0000 && c[i][j].getColor() != 0x00ff00) //Si el color no es rojo ni verde.
-						{
-							c[i][j].pintRect(0xFFFFFF,0.6); //Pintamos de blanco.
-						}
-						else if (c[i][j].getColor() == 0xff0000) //El color es rojo.
-						{
-							c[i][j].getGraphics().destroy();
-							c[i][j].pintRect(0xff0000, 0.8); //Pintamos de rojo oscuro.
-						}
-						else if (c[i][j].getColor() == 0x00ff00) //El color es verde.
-						{
-							c[i][j].getGraphics().destroy();
-							c[i][j].pintRect(0x00ff00, 0.8); //Pintamos de verde oscuro.
-						}
-					} 
-				}
-			}
-		}
-	}
-	else //Si el ratón no está en el canvas.
-	{
-		//Limpiamos el tablero.
-		for (var i = 0; i < 7; i++)
-		{
-			for(var j = 0; j < 9; j++)
-			{
-				if(c[i][j] instanceof Casilla)
-				{
-					c[i][j].setColor(0xFFFFFF);
-					c[i][j].getGraphics().destroy();
-				}
-			}
-		}
 	}
 
-	if (moving) //Si se está moviendo con animación.
+	if (moving && !catchup) //Si se está moviendo con animación y no tiene que alcanzar a otro jugador.
 	{
 		if (movey != p.getJugadores()[0].getPersonaje().getSprite().y) //Distintas en el eje y.
 		{
@@ -985,6 +1389,49 @@ function updateMover() //Función expansión de update para el modo mover del ju
 			p.getJugadores()[0].getPersonaje().getSprite().frame = 0;
 		}
 	}
+	else if (moving && catchup) //Si se está moviendo con animación y tiene que alcanzar a otro jugador.
+	{
+		if (movey != p.getJugadores()[jugactivo].getPersonaje().getSprite().y) //Distintas en el eje y.
+		{
+			if (movey > p.getJugadores()[jugactivo].getPersonaje().getSprite().y) //El destino está abajo.
+			{
+				p.getJugadores()[jugactivo].getPersonaje().getSprite().y += 1;
+				p.getJugadores()[jugactivo].getPersonaje().getSprite().animations.play('down', 12, true);
+			}
+			else if (movey < p.getJugadores()[jugactivo].getPersonaje().getSprite().y) //El destino está arriba.
+			{
+				p.getJugadores()[jugactivo].getPersonaje().getSprite().y -= 1;
+				p.getJugadores()[jugactivo].getPersonaje().getSprite().animations.play('up', 12, true);
+			}
+		}
+		else //Iguales en el eje y.
+		{
+			if (movex != p.getJugadores()[jugactivo].getPersonaje().getSprite().x) //Distintas en el eje x.
+			{
+				if (movex > p.getJugadores()[jugactivo].getPersonaje().getSprite().x) //El destino está a la derecha.
+				{
+					p.getJugadores()[jugactivo].getPersonaje().getSprite().x += 1;
+					p.getJugadores()[jugactivo].getPersonaje().getSprite().animations.play('right', 12, true);
+				}
+				else if (movex < p.getJugadores()[jugactivo].getPersonaje().getSprite().x) //El destino está a la izquierda.
+				{
+					p.getJugadores()[jugactivo].getPersonaje().getSprite().x -= 1;
+					p.getJugadores()[jugactivo].getPersonaje().getSprite().animations.play('left', 12, true);
+				}
+			}
+		}
+
+		if (movex == p.getJugadores()[jugactivo].getPersonaje().getSprite().x && movey == p.getJugadores()[jugactivo].getPersonaje().getSprite().y) //Iguales en el eje x y en el eje y.
+		{
+			//Reseteamos.
+			moving = false;
+			catchup = false;
+
+			//Paramos las animaciones.
+			p.getJugadores()[jugactivo].getPersonaje().getSprite().animations.stop();
+			p.getJugadores()[jugactivo].getPersonaje().getSprite().frame = 0;
+		}
+	}
 }
 
 
@@ -1020,22 +1467,29 @@ function atacarEnemigo() //Función de ataque de un enemigo.
 	{
   		for(var i = 0; i < p.getEnemigos().length; i++) //Recorremos el array de enemigos.
   		{
-   			if(p.getEnemigos()[i] != undefined && (p.getEnemigos()[i].getCasilla()[0] == p.getJugadores()[0].getCasilla()[0]) && (p.getEnemigos()[i].getCasilla()[1] == p.getJugadores()[0].getCasilla()[1])) //Si la casilla del enemigo es la misma que la del jugador.
-   			{
-    			var tiradaE = Dados(p.getEnemigos()[i].getDados(), 6); //Tiramos los dados enemigos (n dados del personaje, 50% acierto).
-    			var tiradaJ = Dados(p.getJugadores()[0].getPersonaje().getDados(), 1); //Tiramos los dados del jugador.
-
-    			var saludAnt = p.getJugadores()[0].getPersonaje().getSalud();
-
-    			p.getJugadores()[0].getPersonaje().setSalud(p.getJugadores()[0].getPersonaje().getSalud() - Math.max(tiradaE - tiradaJ, 0)); //Disminuimos la salud del jugador, contrarrestando la tirada enemiga con la defensa.
-
-    			if(p.getJugadores()[0].getPersonaje().getSalud() < saludAnt)
+  			for (var j = 0; j < p.getJugadores().length; j++) //Buscamos un jugador en la casilla.
+    		{
+    			if (p.getEnemigos()[i] != undefined && p.getJugadores()[j].getCasilla()[0] == p.getEnemigos()[i].getCasilla()[0] && p.getJugadores()[j].getCasilla()[0] == p.getEnemigos()[i].getCasilla()[0]) //Si están en la misma casilla.
     			{
-     				S_Rick_daño.play();
-    			}
+	    			var tiradaE = Dados(p.getEnemigos()[i].getDados(), 6); //Tiramos los dados enemigos (n dados del personaje, 50% acierto).
+	    			var tiradaJ = Dados(p.getJugadores()[j].getPersonaje().getDados(), 1); //Tiramos los dados del jugador.
 
-    			document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Te atacan! Resultado de la defensa: <br /> Has lanzado " + p.getJugadores()[0].getPersonaje().getDados() + " dados de defensa, de los cuales han acertado " + tiradaJ
-    			+ ". <br /> El enemigo ha lanzado " + p.getEnemigos()[i].getDados() + " dados de ataque, de los cuales han acertado " + tiradaE + ". <br /> Salud resultante: " + p.getJugadores()[0].getPersonaje().getSalud() + ".";
+	    			var saludAnt = p.getJugadores()[j].getPersonaje().getSalud();
+
+	    			p.getJugadores()[j].getPersonaje().setSalud(p.getJugadores()[j].getPersonaje().getSalud() - Math.max(tiradaE - tiradaJ, 0)); //Disminuimos la salud del jugador, contrarrestando la tirada enemiga con la defensa.
+
+	    			if(p.getJugadores()[j].getPersonaje().getSalud() < saludAnt) //Si recibe daño.
+	    			{
+	     				S_Rick_daño.play();
+	    			}
+
+	    			document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Te atacan! Resultado de la defensa: <br /> Has lanzado " + p.getJugadores()[j].getPersonaje().getDados() + " dados de defensa, de los cuales han acertado " + tiradaJ
+	    			+ ". <br /> El enemigo ha lanzado " + p.getEnemigos()[i].getDados() + " dados de ataque, de los cuales han acertado " + tiradaE + ". <br /> Salud resultante: " + p.getJugadores()[j].getPersonaje().getSalud() + ".";
+
+	    			RedAtacarEnemigo(p.getJugadores()[j].getPersonaje().getSalud(), j); //Llamada al servidor para reducir la salud del jugador.
+
+	    			j = p.getJugadores().length; //Salimos del bucle de los jugadores (un sólo ataque).
+   				}
    			}
   		}
  	}
@@ -1109,6 +1563,11 @@ function moverEnemigos() //Función que mueve los enemigos del tablero.
 			  	   		c[u][v].setRuido(0); //Reseteamos el ruido de la ronda.
 			     	}
 			    }
+			}	
+
+			if (e[i] != undefined)
+			{
+				RedMoverEnemigo(i, e[i].getCasilla()[0], e[i].getCasilla()[1]); //Movemos el enemigo en otros jugadores.
 			}
 		}
 	}
@@ -1172,6 +1631,11 @@ function moverAnimE() //Función que mueve a los enemigos utilizando su animaci�
 				movinge = true;
 			}
 		}
+
+		if (movinge == false) //Si han terminado de moverse.
+		{
+			enemies2();
+		}
 	}
 }
 
@@ -1225,7 +1689,79 @@ function spawnEnemigo() //Función que hace aparecer enemigos nuevos.
 		p.getEnemigos()[index].init();
 		p.getEnemigos()[index].setCasilla(u,v);
 
+		RedSpawnEnemigos(u, v, x, y, t); //Llamada para spawnear el enemigo en otros jugadores.
+
 		document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Han aparecido enemigos!";
+	}
+}
+
+
+function enemies() //Función que hace la primera parte del turno de los enemigos.
+{
+	if (leader) //Si es el líder de la partida.
+	{
+		document.getElementById("Consoletext").innerHTML += "<br /><br /> Fin del turno de los jugadores. ¡Turno de los enemigos! (Continuar)";
+		document.getElementById("Consoletext").innerHTML = "Turno de los enemigos:";
+
+		if (!moveonce) //Si no se han movido aún.
+		{
+			S_IA_RoundStart.play();
+			moverEnemigos(); //Movemos a los enemigos.
+			moveonce = true;
+		}
+	}
+}
+
+
+function enemies2() //Función que hace la segunda parte del turno de los enemigos.
+{
+	if (leader) //Si es el líder de la partida.
+	{
+		var count = 0; //Contamos el número de enemigos en juego.
+
+		for(var i = 0; i < p.getEnemigos().length; i++)
+		{
+			if(p.getEnemigos()[i] instanceof Enemigo)
+			{
+				count++;
+			}
+		}
+
+		if(!movinge) //Si no se están moviendo.
+		{
+			atacarEnemigo(); //Los enemigos atacan.
+
+			if (count >= 15) //Si hay 15 o más enemigos en juego, máximo alcanzable, se vuelven a activar.
+			{
+				document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Oh, oh! ¡Demasiados Meeseeks! ¡Vuelven a activar su turno muy mosqueados!";
+				S_IA_furia.play();
+								
+				moverEnemigos(); //Movemos a los enemigos.
+				atacarEnemigo(); //Los enemigos atacan.
+			}
+			else
+			{
+				if (getRandom(0, 3) != 0) //Hay un 75% de que aparezca un enemigo.
+				{
+					spawnEnemigo();
+				}
+			}
+
+			for (var i = 0; i < p.getJugadores().length; i++)
+            {
+                putPuntos(p.getJugadores()[i].getPersonaje().getID(), p.getJugadores()[i].getPuntos()); //Por cada jugador, actualizamos los puntos en el servidor.
+            }
+                                                        
+			turno++; //Incrementamos el turno.
+
+			aux = false;
+			moveonce = false;
+			con = false;
+			started = false;
+			turnoenemigos = false;
+
+			RedRestart(); //Reseteamos la ronda.
+		}
 	}
 }
 
@@ -1280,12 +1816,11 @@ function Partida(numJ) //Objeto Partida.
 			enemigos[i].init();
 		}
 
-		//Seleccionamos los personajes.
-		jugadores[0].setPersonaje(new Personaje("Rick"));
-
+		//Inicializamos los personajes.
 		for(var i = 0; i < njug; i++)
 		{
-			jugadores[0].getPersonaje().init();
+			jugadores[i].setPersonaje(new Personaje(initjugs[i]));
+			jugadores[i].getPersonaje().init();
 		}
 	}
 
@@ -1340,7 +1875,6 @@ function Jugador() //Objeto Jugador.
     {
         return puntos;
     }
-
 
 	//Setters.
 	this.setAccionesDisp = function(a)
@@ -1699,13 +2233,19 @@ function sound(src) //Objeto auxiliar de sonido.
     this.sound.setAttribute("preload", "auto");
     this.sound.setAttribute("controls", "none");
     this.sound.style.display = "none";
+
     document.body.appendChild(this.sound);
-    this.play = function(){
+    
+    this.play = function()
+    {
         this.sound.play();
     }
-    this.stop = function(){
+
+    this.stop = function()
+    {
         this.sound.pause();
     }
+
     this.loop = function()
     {
     	this.sound.setAttribute("loop", "loop");
