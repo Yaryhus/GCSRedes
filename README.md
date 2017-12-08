@@ -3,19 +3,27 @@
 ---
 
 # Tabla de Contenidos
-
-  #### 1. Autores
-  #### 2. Descripción del juego
-  #### 3. Reglas del juego
-  #### 4. Referencias
-  #### 5. Copyright disclaimer 
-  #### 6. Diagrama de navegación 
-  #### 7. Diagrama de clases
-  #### 8. Instrucciones de ejecución <br>
+  
+  #### 1. Demo
+  #### 2. Autores
+  #### 3. Descripción del juego
+  #### 4. Reglas del juego
+  #### 5. Referencias
+  #### 6. Copyright disclaimer 
+  #### 7. Diagrama de navegación 
+  #### 8. Diagrama de clases
+  #### 9. Instrucciones de ejecución
+  #### 10. Documentación WebSockets <br>
 
 ---
 
-## 1. Autores
+## 1. Demo
+
+**Link:** www.youtube.com/user/Aleviux
+
+---
+
+## 2. Autores
 
 **Nombre y Apellidos:** Guillermo Amigó Urda <br>
 **Correo corporativo:** g.amigo@alumnos.urjc.es <br>
@@ -31,7 +39,7 @@
 
 ---
 
-## 2. Descripción del juego
+## 3. Descripción del juego
 
 *Rick and Morty: Hide and Meeseek* es un juego de mesa por turnos, online y multijugador, cuyas mecánicas principales se inspiran en gran medida en el juego de mesa *Zombicide*, y, en menor grado, en los juegos de mesa *Dead of Winter* y *Arcadia Quest*, y cuya estética y ambientación se corresponden con las de la serie animada *Rick and Morty* (*Adult Swim*, *Cartoon Network*).
 
@@ -39,7 +47,7 @@ El desarrollo del juego consiste en la alternancia de turnos entre jugadores y l
 
 ---
 
-## 3. Reglas del juego
+## 4. Reglas del juego
 
 *Nota: para una lista completa de personajes, objetos, escenarios y misiones, consultar el anexo incluido en este repositorio.*
 
@@ -65,7 +73,7 @@ Esta sucesión se producirá indefinidamente, hasta que se obtenga la victoria (
 
 ---
 
-## 4. Referencias
+## 5. Referencias
 
 1. Web oficial de *Rick and Morty*: [http://www.adultswim.com/videos/rick-and-morty/] <br>
 2. Manuales de *Zombicide*: [https://zombicide.com/en/game-rules/] <br>
@@ -74,7 +82,7 @@ Esta sucesión se producirá indefinidamente, hasta que se obtenga la victoria (
 
 ---
 
-## 5. Copyright disclaimer
+## 66. Copyright disclaimer
 
 This product is a non-lucrative recreation of the show through a tabletop online game, without any kind of profit or redistribution present, and for educative purposes only. 
 
@@ -86,7 +94,7 @@ If you enjoy this product, please support the creators of the show and their res
 
 ---
 
-## 6. Diagrama de navegación
+## 7. Diagrama de navegación
 
 **Pantalla 1** - Menú principal del juego, pulsando espacio comenzamos la partida.
 
@@ -130,14 +138,14 @@ If you enjoy this product, please support the creators of the show and their res
 
 ---
 
-## 7. Diagrama de clases
+## 8. Diagrama de clases
 
 A continuación se presenta el diagrama de clases correspondiente con la parte de Java y API Rest:
 ![alt text](https://github.com/Yaryhus/Rick-And-Morty-Hide-and-Meeseek/blob/master/DiagramaNav/Clases.PNG "Rick and Morty: Hide and Meeseek")
 
 ---
 
-## 8. Instrucciones de ejecución
+## 9. Instrucciones de ejecución
 
 Durante el desarrollo de la fase, se ha utilizado el IDE gratuito NetBeans 8.2, basado en Java (https://netbeans.org/downloads/).
 Se recomienda su uso para la ejecución/compilación del proyecto, aunque otro IDE como Eclipse (que soporte Spring y Maven mediante auxiliares como Spring Tool Suite) permitirá su ejecución.
@@ -145,5 +153,17 @@ Se recomienda su uso para la ejecución/compilación del proyecto, aunque otro I
 Para ejecutar el juego, primero deberemos iniciar el servidor desde el IDE que corresponda (botón de play en NetBeans). Una vez iniciado, insertaremos en el navegador la siguiente URL: "localhost:8080/HideAndMeeseeks/Practica.html", y ya podremos jugar mediante el servidor.
 
 Alternativamente, si no se dispone de un IDE de desarrollo, podemos ejecutar el .jar desde la consola de comandos. Para ello, primero descargaremos el .zip del repositorio y lo descomprimiremos. Después, abrimos la consola de comandos (PowerShell o cmd) en la carpeta "jar" (dentro de HideAndMeeseeks). Para ello, podemos hacer Shift + Click en dicho directorio. Al hacerlo, se nos abrirá la consola, sobre la que deberemos escribir "java -jar HideAndMeeseeks.jar". Damos a enter y dejamos unos segundos hasta que se inicialice el servidor. Finalmente, copiamos la url en el navegador, y ya podremos jugar: "localhost:8080/HideAndMeeseeks/Practica.html".
+
+---
+
+## 10. Documentación WebSockets
+
+La implementación de la parte asíncrona de la práctica se ha llevado a cabo mediante el uso de WebSockets en Java, por lo que encontramos una estructura tal que así:
+
+De los 4 posibles jugadores, el primero en iniciar la sesión en el servidor es considerado como "Líder" de la partida. Esto es, su parte de cliente será la que decidirá los cambios sobre las otras, de forma que éstas se limitarán a imitar sus acciones y estados. Así, tendremos un "host" cuyos datos usarán los demás clientes.
+
+Para realizar el intercambio de datos entre sesiones, se utilizará el formato de texto Json, de forma que todos los mensajes que pasen por el servidor tendrán un campo "clave" que determinará qué acciones debe realizar el servidor (contestar a la misma sesión que mandó el mensaje, a otras, cambiar el valor de alguna variable del servidor, mandar mensajes a todas las sesiones, etc.). En la parte del cliente, cada mensaje tendrá un caso particular, para ejecutar las funciones determinadas con los datos recibidos.
+
+Mediante este sistema, el "líder" realizará cambios en sus datos, envíandoselos al servidor (y éste a los demás jugadores), y llamadas para realizar diversas acciones, consiguiendo así un sistema de conexión asíncrona en el juego.
 
 ---
