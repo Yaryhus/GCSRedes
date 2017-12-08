@@ -82,7 +82,7 @@ Esta sucesión se producirá indefinidamente, hasta que se obtenga la victoria (
 
 ---
 
-## 66. Copyright disclaimer
+## 6. Copyright disclaimer
 
 This product is a non-lucrative recreation of the show through a tabletop online game, without any kind of profit or redistribution present, and for educative purposes only. 
 
@@ -140,7 +140,7 @@ If you enjoy this product, please support the creators of the show and their res
 
 ## 8. Diagrama de clases
 
-A continuación se presenta el diagrama de clases correspondiente con la parte de Java y API Rest:
+A continuación se presenta el diagrama de clases correspondiente con la parte de Java, API Rest y WebSockets:
 ![alt text](https://github.com/Yaryhus/Rick-And-Morty-Hide-and-Meeseek/blob/master/DiagramaNav/Clases.PNG "Rick and Morty: Hide and Meeseek")
 
 ---
