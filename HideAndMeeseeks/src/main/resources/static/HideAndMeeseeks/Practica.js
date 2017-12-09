@@ -372,21 +372,10 @@ function atacarWebsockets(daño, i, jug) //Método de atacar a un enemigo.
 		p.getEnemigos()[i].getSprite().destroy(); //Eliminamos el sprite.
 						
 		document.getElementById("Consoletext").innerHTML += "<br /><br /> ¡Enemigo eliminado!";
-
-        if(p.getEnemigos()[i].getTipo() == 1) //Meeseek normal.
-        {
-            p.getJugadores()[jugactivo].setPuntos(p.getJugadores()[jugactivo].getPuntos() + 5); 
-        }
-        else if(p.getEnemigos()[i].getTipo() == 2) //Meeseek especial.
-        {
-            p.getJugadores()[jugactivo].setPuntos(p.getJugadores()[jugactivo].getPuntos() + 10); 
-        }
-        else if(p.getEnemigos()[i].getTipo() == 3) //Boss.
-        {
-            p.getJugadores()[jugactivo].setPuntos(p.getJugadores()[jugactivo].getPuntos() + 20); 
-        }
-                                                
+                                 
         p.getEnemigos()[i] = undefined; //Eliminamos el enemigo.
+
+	    getPuntos(p.getJugadores()[jugactivo].getPersonaje().getID()); //Por cada jugador, actualizamos sus puntos en local.
 	}
 	else
 	{
@@ -735,10 +724,7 @@ function create() //Función create: inicia el juego.
 		document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
 	}
 	
-    for (var i = 0; i < p.getJugadores().length; i++)
-    {
-        putPuntos(p.getJugadores()[i].getPersonaje().getID(), 0); //Fija a 0 los puntos en el servidor, por cada jugador.
-    }
+    putPuntos(p.getJugadores()[0].getPersonaje().getID(), 0); //Fija a 0 los puntos en el servidor, por cada jugador.
         
 	//Música y sonidos.
 	music = new sound("Material/Sound/Music/S_main.mp3");
@@ -818,10 +804,17 @@ function update() //Función update: actualiza el juego.
 
 		if(!moving && ganado) //Si el jugador está en la casilla meta (ganar).
 	 	{
+			p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 100); //Puntos al ganar.
+			putPuntos(p.getJugadores()[0].getPersonaje().getID(), p.getJugadores()[0].getPuntos()); //Por cada jugador, actualizamos sus puntos en el servidor.
+
+			for (var i = 1; i < p.getJugadores().length; i++)
+			{
+			    getPuntos(p.getJugadores()[i].getPersonaje().getID()); //Por cada jugador, actualizamos sus puntos en local.
+			}
+
 	 		con = false;
 	 		document.getElementById("Consoletext").innerHTML = "¡Has ganado! ¡Wubba Dubba lub lub!";
 	 		S_win.play();
-            p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 100); //Puntos al ganar.
 	 		gameReset();
 	 	}
 	 	else
@@ -847,7 +840,7 @@ function update() //Función update: actualiza el juego.
 		{
 			document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
 		}
-    }
+	}
 }
 
 
@@ -871,8 +864,6 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 
 					S_punch.play();
 
-					RedAtacarAEnemigo(tirada, i, 0); //Llamada para atacar al servidor.
-
 					if(p.getEnemigos()[i].getSalud() <= 0) //Si el enemigo pierde toda su salud.
 					{
 						p.getEnemigos()[i].getSprite().destroy(); //Eliminamos el sprite.
@@ -891,9 +882,10 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
                         {
                             p.getJugadores()[0].setPuntos(p.getJugadores()[0].getPuntos() + 20); 
                         }
+
+                        putPuntos(p.getJugadores()[0].getPersonaje().getID(), p.getJugadores()[0].getPuntos()); //Por cada jugador, actualizamos sus puntos en el servidor.
                                                 
                         p.getEnemigos()[i] = undefined; //Eliminamos el enemigo.
-                        i = p.getEnemigos().length; //Salimos del bucle, para no seguir atacando al resto de enemigos.
 					}
 					else
 					{
@@ -906,6 +898,9 @@ function atacarclick() //Función llamada al pulsar el botón "Atacar".
 					document.getElementById("Consoletext").innerHTML += "<br /><br /> Se ha generado un poco de ruido en la casilla.";
 
 					p.getJugadores()[0].setAccionesDisp(p.getJugadores()[0].getAccionesDisp() - 1); //Disminuimos las acciones del jugador.
+
+					RedAtacarAEnemigo(tirada, i, 0); //Llamada para atacar al servidor.
+
 					i = p.getEnemigos().length; //Salimos del bucle.
 				}
 			}
@@ -980,6 +975,7 @@ function conti(net) //Función llamada al pulsar el botón "Continuar".
    		    document.getElementById("Consoletext2").innerHTML = "Jugador  -  Puntos" + "<br /><br />";
 			for (var i = 0; i < p.getJugadores().length; i++)
 			{
+				getPuntos(p.getJugadores()[i].getPersonaje().getID()); //Por cada jugador, actualizamos sus puntos en local (al resetear la partida se borran los datos).
 				document.getElementById("Consoletext2").innerHTML += p.getJugadores()[i].getPersonaje().getID() + ": " + p.getJugadores()[i].getPuntos() + "<br />"; 
 			}
   		}
@@ -1000,6 +996,11 @@ function conti(net) //Función llamada al pulsar el botón "Continuar".
 
   		if(p.getJugadores()[0].getAccionesDisp() <= 0) //Si no quedan acciones.
   		{
+  			for (var i = 0; i < p.getJugadores().length; i++)
+			{
+			    getPuntos(p.getJugadores()[i].getPersonaje().getID()); //Por cada jugador, actualizamos sus puntos en local.
+			}
+
   			activo = false;
   			RedDeactivate(); //Cambiamos el turno.
   		}
@@ -1189,10 +1190,7 @@ function CasillasAd(base) //Función que recibe un array índice de casilla y de
 
 function gameReset() //Función que resetea el juego.
 {
-    for (var i = 0; i < p.getJugadores().length; i++)
-    {
-        putPuntos(p.getJugadores()[i].getPersonaje().getID(), p.getJugadores()[i].getPuntos()); //Por cada jugador, actualizamos sus puntos en el servidor.
-    }
+    putPuntos(p.getJugadores()[0].getPersonaje().getID(), p.getJugadores()[0].getPuntos()); //Por cada jugador, actualizamos sus puntos en el servidor.
 
 	turno = 1;
 	started = false;
@@ -1469,7 +1467,7 @@ function atacarEnemigo() //Función de ataque de un enemigo.
   		{
   			for (var j = 0; j < p.getJugadores().length; j++) //Buscamos un jugador en la casilla.
     		{
-    			if (p.getEnemigos()[i] != undefined && p.getJugadores()[j].getCasilla()[0] == p.getEnemigos()[i].getCasilla()[0] && p.getJugadores()[j].getCasilla()[0] == p.getEnemigos()[i].getCasilla()[0]) //Si están en la misma casilla.
+    			if (p.getEnemigos()[i] != undefined && p.getJugadores()[j].getCasilla()[0] == p.getEnemigos()[i].getCasilla()[0] && p.getJugadores()[j].getCasilla()[1] == p.getEnemigos()[i].getCasilla()[1]) //Si están en la misma casilla.
     			{
 	    			var tiradaE = Dados(p.getEnemigos()[i].getDados(), 6); //Tiramos los dados enemigos (n dados del personaje, 50% acierto).
 	    			var tiradaJ = Dados(p.getJugadores()[j].getPersonaje().getDados(), 1); //Tiramos los dados del jugador.
@@ -1746,12 +1744,7 @@ function enemies2() //Función que hace la segunda parte del turno de los enemig
 					spawnEnemigo();
 				}
 			}
-
-			for (var i = 0; i < p.getJugadores().length; i++)
-            {
-                putPuntos(p.getJugadores()[i].getPersonaje().getID(), p.getJugadores()[i].getPuntos()); //Por cada jugador, actualizamos los puntos en el servidor.
-            }
-                                                        
+                                          
 			turno++; //Incrementamos el turno.
 
 			aux = false;
