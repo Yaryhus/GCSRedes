@@ -61,76 +61,79 @@ public class WebsocketRedHandler extends TextWebSocketHandler
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception //Método llamado al recibir un mensaje de una sesión.
     {
-        if (sessions.containsValue(session)) //Si la sesión pertenece al servidor.
+        synchronized (sessions)
         {
-            System.out.println("Message received: " + message.getPayload());
-            String msg = message.getPayload();
-            JsonNode node = mapper.readTree(msg);
+            if (sessions.containsValue(session)) //Si la sesión pertenece al servidor.
+            {
+                System.out.println("Message received: " + message.getPayload());
+                String msg = message.getPayload();
+                JsonNode node = mapper.readTree(msg);
 
-            switch(node.get("clave").asText()) //Comprobamos el valor de la clave del mensaje.
-            {   
-                case ("init"): //Mensaje inicial.
-                    partida.add(session); //Añadimos la sesión a la partida.
-                    
-                    if(session.getId().equals(partida.get(0).getId())) //Si la sesión es la primera.
-                    {
-                        session.sendMessage(new TextMessage("{\"clave\":\"leader\"}")); //Mandamos mensaje de líder de sesión.
-                    }
-                    
-                    sendOtherParticipants(session, node);
-                    break;
-                
-                case ("start"): //Mensaje de comienzo de partida.
-                    if(!empezada) //Si no había empezado.
-                    {
-                        empezada = true; //Marcamos el booleano auxiliar.
+                switch(node.get("clave").asText()) //Comprobamos el valor de la clave del mensaje.
+                {   
+                    case ("init"): //Mensaje inicial.
+                        partida.add(session); //Añadimos la sesión a la partida.
+
+                        if(session.getId().equals(partida.get(0).getId())) //Si la sesión es la primera.
+                        {
+                            session.sendMessage(new TextMessage("{\"clave\":\"leader\"}")); //Mandamos mensaje de líder de sesión.
+                        }
+
                         sendOtherParticipants(session, node);
-                    }
-                    break;
-                    
-                case ("restart"): //Mensaje de recomenzar la ronda.
-                    sessions.get(partida.get(0).getId()).sendMessage(new TextMessage("{\"clave\":\"activate\"}")); //Activamos el turno del jugador inicial.
-                    break;
-                    
-                case ("deactivate"): //Mensaje de desactivar turno.
-                    if(partida.indexOf(session) != (partida.size()-1)) //Si la sesión que manda el mensaje no es la última.
-                    {
-                        sessions.get(partida.get(partida.indexOf(session)+1).getId()).sendMessage(new TextMessage("{\"clave\":\"activate\"}")); //Activamos el turno de la siguiente sesión.
-                    }
-                    else //Si la sesión que manda el mensaje es la última.
-                    {
-                        //sessions.get(partida.get(0).getId()).sendMessage(new TextMessage("{\"clave\":\"activate\"}")); //(Debug).
-                        sessions.get(partida.get(0).getId()).sendMessage(new TextMessage("{\"clave\":\"enemies\"}")); //Activamos el turno de los enemigos.
-                    }
-                    
-                    break;
-                
-                case ("moverPJ"): //Mensaje de movimiento.
-                case ("ruido"): //Mensaje de ruido.
-                case ("atacaraenemigo"): //Mensaje de ataque al enemigo.
-                case ("moverenemigo"): //Mensaje de mover a un enemigo.
-                case ("atacarenemigo"): //Mensaje de ataque del enemigo.
-                case ("spawnenemigo"): //Mensaje de spawn de los enemigos.
-                case ("continuar"): //Mensaje de continuar.
-                case ("response"): //Mensaje de respuesta inicial.
-                    sendOtherParticipants(session, node);
-                    break;
+                        break;
 
-                case ("chat"): //Mensaje de chat.
-                    session.sendMessage(new TextMessage(node.toString()));
-                    sendOtherParticipants(session, node);
-                    break;
+                    case ("start"): //Mensaje de comienzo de partida.
+                        if(!empezada) //Si no había empezado.
+                        {
+                            empezada = true; //Marcamos el booleano auxiliar.
+                            sendOtherParticipants(session, node);
+                        }
+                        break;
 
-                case ("echo"): //Mensaje de servidor de eco.
-                    session.sendMessage(new TextMessage(node.toString()));
-                    break;
+                    case ("restart"): //Mensaje de recomenzar la ronda.
+                        sessions.get(partida.get(0).getId()).sendMessage(new TextMessage("{\"clave\":\"activate\"}")); //Activamos el turno del jugador inicial.
+                        break;
 
-                case ("Hi"): //Mensaje de saludo inicial.
-                    session.sendMessage(new TextMessage(node.toString()));
-                    break;
+                    case ("deactivate"): //Mensaje de desactivar turno.
+                        if(partida.indexOf(session) != (partida.size()-1)) //Si la sesión que manda el mensaje no es la última.
+                        {
+                            sessions.get(partida.get(partida.indexOf(session)+1).getId()).sendMessage(new TextMessage("{\"clave\":\"activate\"}")); //Activamos el turno de la siguiente sesión.
+                        }
+                        else //Si la sesión que manda el mensaje es la última.
+                        {
+                            //sessions.get(partida.get(0).getId()).sendMessage(new TextMessage("{\"clave\":\"activate\"}")); //(Debug).
+                            sessions.get(partida.get(0).getId()).sendMessage(new TextMessage("{\"clave\":\"enemies\"}")); //Activamos el turno de los enemigos.
+                        }
 
-                default:
-                    break;
+                        break;
+
+                    case ("moverPJ"): //Mensaje de movimiento.
+                    case ("ruido"): //Mensaje de ruido.
+                    case ("atacaraenemigo"): //Mensaje de ataque al enemigo.
+                    case ("moverenemigo"): //Mensaje de mover a un enemigo.
+                    case ("atacarenemigo"): //Mensaje de ataque del enemigo.
+                    case ("spawnenemigo"): //Mensaje de spawn de los enemigos.
+                    case ("continuar"): //Mensaje de continuar.
+                    case ("response"): //Mensaje de respuesta inicial.
+                        sendOtherParticipants(session, node);
+                        break;
+
+                    case ("chat"): //Mensaje de chat.
+                        session.sendMessage(new TextMessage(node.toString()));
+                        sendOtherParticipants(session, node);
+                        break;
+
+                    case ("echo"): //Mensaje de servidor de eco.
+                        session.sendMessage(new TextMessage(node.toString()));
+                        break;
+
+                    case ("Hi"): //Mensaje de saludo inicial.
+                        session.sendMessage(new TextMessage(node.toString()));
+                        break;
+
+                    default:
+                        break;
+                }
             }
         }
     }
