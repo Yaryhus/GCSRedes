@@ -480,7 +480,7 @@ function putPuntos(name, puntosSus) //Función que hace un PUT (sustituye) al se
 {
 	$.ajax({
  		method:"PUT",
-		url:"http://localhost:8080/setPuntuacion/" + name,
+		url:"ws://" + window.location.host + "/setPuntuacion/" + name,
 		data : JSON.stringify(puntosSus),
 		headers:{ "Content-type":"application/json"}
 	});
@@ -490,7 +490,7 @@ function postPuntos(name, puntosSum) //Función que hace un POST (añade) al ser
 {
 	$.ajax({
 		method:"POST",
-		url:"http://localhost:8080/setPuntuacion/" + name,
+		url:"ws://" + window.location.host + "/setPuntuacion/" + name,
 		data : JSON.stringify(puntosSum),
 		headers:{ "Content-type":"application/json"}
 	});
@@ -500,7 +500,7 @@ function getPuntos(name) //Función que hace un GET al servidor de los puntos de
 {
 	$.ajax({
 		method:"GET",
-		url:"http://localhost:8080/getPuntuacion/" + name,
+		url:"ws://" + window.location.host + "/getPuntuacion/" + name,
 		headers:{ "Content-type":"application/json"}
 	}).done(function(data)
 	{
@@ -527,7 +527,7 @@ function juga(n) //Función que inicializa los jugadores en el servidor.
 {
     $.ajax({
 		method:"POST",
-		url:"http://localhost:8080/jugadores",
+		url:"ws://" + window.location.host + "/jugadores",
 		data : JSON.stringify({name : n , puntos : 0}),
 		headers:{ "Content-type":"application/json"}
     });
@@ -537,7 +537,7 @@ function getjuga() //Función que devuelve los jugadores del servidor.
 {
 	$.ajax({
 		method:"GET",
-		url:"http://localhost:8080/jugadores",
+		url:"ws://" + window.location.host + "/jugadores",
 		headers:{ "Content-type":"application/json"}
 	}).done(function(data)
 	{
