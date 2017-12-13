@@ -166,4 +166,157 @@ Para realizar el intercambio de datos entre sesiones, se utilizará el formato d
 
 Mediante este sistema, el "líder" realizará cambios en sus datos, envíandoselos al servidor (y éste a los demás jugadores), y llamadas para realizar diversas acciones, consiguiendo así un sistema de conexión asíncrona en el juego.
 
+### Documentación del protocolo:
+
+**Init:** 
+El mensaje se manda para inciar el juego (saludo), recibiendo cada jugador conectado el personaje del jugador que manda Init. Contiene la clave, un booleano que determina si ha empezado la partida, y el personaje. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (modificar las variables locales y llamada a RedResponse()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "init", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  begin: "true"/"false", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  message: initjugs[0] (El nombre del personaje que manda el mensaje) <br>
+} <br>
+
+**Response:**
+El mensaje se manda para inciar el juego (respuesta al saludo), recibiendo cada jugador recién conectado el personaje de los jugadores que ya estaban en la partida. Contiene la clave y el valor del personaje. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (modificar las variables locales). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "response", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  message: initjugs[0] (El nombre del personaje que manda el mensaje) <br>
+} <br>
+
+**Leader:**
+El mensaje lo manda el servidor a la primera sesión iniciada, para comunicarle que es el anfitrión o host. <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clave: "leader" <br>
+} <br>
+
+**Full:**
+El mensaje lo manda el servidor a las sesiones nuevas si la partida ha empezado o está llena, quitando la interfaz e impidiendo al nuevo jugador unirse hasta que la partida esté disponible. <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "full" <br>
+} <br>
+
+**Bye:**
+El mensaje lo manda el servidor a las sesiones de la partida si algún jugador se ha ido de la misma, ya que el juego no puede contemplar que continúen si él (desbalancearía el juego), con lo que los demás jugadores son avisados y cancelan la partida.
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "bye" <br>
+} <br>
+
+**Start:**
+El mensaje lo manda el host para comunicar al resto de jugadores que inicien la partida (sólo la puede iniciar el líder). Contiene la clave. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (startWebSockets()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "start" <br>
+} <br>
+
+**Continuar:**
+El mensaje se manda para comunicar al resto de jugadores que continuen, actuando en consecuencia como si pulsasen la barra espaciadora, para controlar el ritmo del juego. Contiene la clave. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (conti()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "continuar" <br>
+} <br>
+
+**Deactivate:**
+El mensaje se manda para desactivar el turno del jugador, dándoselo al siguiente (o a los enemigos). Contiene la clave. <br>
+El mensaje será recibido por el servidor, que lo reenviará al jugador cuyo turno sea (o al host si es el de los enemigos), los cuales al recibirlo harán la función apropiada en el switch case (enemies() o "activate"). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "deactivate" <br>
+} <br>
+
+**Activate:**
+El mensaje lo manda el servidor tras recibir un "deactivate", para activar el turno del jugador correspondiente. <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "activate" <br>
+} <br>
+
+**Enemies:**
+El mensaje lo manda el servidor tras recibir un "deactivate", para activar el turno de los enemigos. <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "enemies" <br>
+} <br>
+
+**Restart:**
+El mensaje se manda para devolver el turno al primer jugador (host) y reiniciar así la ronda. Contiene la clave. <br>
+El mensaje será recibido por el servidor, que enviará un "activate" al primer jugador. <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "restart" <br>
+} <br>
+
+**Echo:**
+El mensaje se manda para utilizar el servidor de eco, recibiendo el mismo mensaje que envía. Contiene la clave y el mensaje. <br>
+El mensaje será recibido por el servidor, que lo reenviará al mismo jugador, el cual al recibirlo lo mostrarán por consola. <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "echo", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  message: (String) <br>
+} <br>
+
+**Chat:**
+El mensaje se manda para difundirse al resto de jugadores de forma asíncrona, de manera que conseguimos el efecto de chat. Contiene la clave y el mensaje. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo lo mostrarán en su chat. <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "chat", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  message: (String) <br>
+} <br>
+
+**MoverPJ:**
+El mensaje se manda para comunicar al resto de jugadores que muevan al personaje a la casilla nueva. Contiene clave, jugador a mover, coordenadas de la casilla a la que se mueve, y salud resultante del movimiento (por si falla al evadir). <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (moverWebsockets()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "moverPJ", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  jugador: (jugador que se mueve), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  i: (coordenada x de la casilla), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  j: (coordenada y de la casilla), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  salud: (salud resultante)
+} <br> <br>
+
+**Ruido:** 
+El mensaje se manda para marcar que el jugador ha hecho ruido en su casilla. Contiene la clave y el jugador. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (ruidoWebSockets()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "ruido", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  jugador: (jugador que hace ruido)<br>
+} <br> 
+
+**AtacarAEnemigo:**
+El mensaje se manda para comunicar al resto de jugadores que se ha atacado al enemigo en cuestión. Contiene la clave, el jugador atacante, el daño y el enemigo atacado. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (atacarWebsockets()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "atacaraenemigo", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  jugador: (jugador que ataca), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  hurt: (daño inflingido), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  enemigo: (el enemigo atacado) <br>
+} <br>
+
+**moverEnemigo:**
+El mensaje se manda para mover a los enemigos en los jugadores que no sean el host. Contiene la clave, el enemigo y las coordenadas de la casilla a la que se mueve. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (moverEnemigosWebsockets()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "moverenemigo", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  enemigo: (el enemigo que se mueve), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  i: (coordenada x de la casilla), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  j: (coordenada y de la casilla) <br>
+} <br>
+
+**AtacarEnemigo:**
+El mensaje se manda para que el jugador atacado sea por el enemigo en cuestión. Contiene la clave, el jugador atacado, y el daño. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (atacarEnemigosWebsockets()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "atacarenemigo", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  hurt: (daño inflingido), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  jugador: (El nombre del jugador atacado) <br>
+} <br>
+
+**SpawnEnemigos:**
+El mensaje se manda para que aparezcan los enemigos en los tableros de los otros jugadores. Contiene el la clave, el tipo de enemigo, la casilla en la que aparece, y las coordenadas de su sprite. <br>
+El mensaje será recibido por el servidor, que lo reenviará al resto de jugadores, los cuales al recibirlo harán la función apropiada en el switch case (spawnEnemigosWebsockets()). <br>
+{ <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "spawnenemigo", <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  tipo: (tipo del enemigo aparecido), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  coordx: (coordenada x del sprite), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  coordy: (coordenada y del sprite), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  casillau: (coordenada x de la casilla), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  casillav: (coordenada y de la casilla) <br>
+} <br>
+
 ---
