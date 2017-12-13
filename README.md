@@ -198,7 +198,7 @@ El mensaje lo manda el servidor a las sesiones nuevas si la partida ha empezado 
 } <br>
 
 **Bye:**
-El mensaje lo manda el servidor a las sesiones de la partida si algún jugador se ha ido de la misma, ya que el juego no puede contemplar que continúen si él (desbalancearía el juego), con lo que los demás jugadores son avisados y cancelan la partida.
+El mensaje lo manda el servidor a las sesiones de la partida si algún jugador se ha ido de la misma, ya que el juego no puede contemplar que continúen si él (desbalancearía el juego), con lo que los demás jugadores son avisados y cancelan la partida. <br>
 { <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  clave: "bye" <br>
 } <br>
